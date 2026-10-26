@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let screenshotWatcher = ScreenshotWatcher()
     private var shelf: ShelfPanelController?
     private var statusItemController: StatusItemController?
+    private var hotkey: HotkeyController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let inbox = makeStorage()
@@ -19,7 +20,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let shelf = ShelfPanelController(store: store, settings: settings, inbox: inbox, sounds: sounds)
         self.shelf = shelf
-        statusItemController = StatusItemController(shelf: shelf)
+        statusItemController = StatusItemController(shelf: shelf, store: store)
+        hotkey = HotkeyController { [weak shelf] in shelf?.toggle() }
         shelf.show()
 
         screenshotWatcher.onScreenshot = { [weak self] url in self?.collectScreenshot(at: url) }
