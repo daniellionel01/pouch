@@ -18,6 +18,7 @@ final class ShelfPanelController {
     private let interactions: ShelfInteractions
     private var refreshTimer: Timer?
     private var peekTask: Task<Void, Never>?
+    private var keyMonitor: Any?
 
     init(store: ShelfStore, settings: AppSettings, inbox: DropInbox?, sounds: SoundPlayer) {
         self.store = store
@@ -30,6 +31,10 @@ final class ShelfPanelController {
         panel.contentView = ShelfContainerView(content: hostingView, dropHandler: dropHandler) { [ui] targeted in
             if ui.isDropTargeted != targeted { ui.isDropTargeted = targeted }
         }
+
+        panel.quickLook = interactions.quickLook
+        interactions.onDismiss = { [weak self] in self?.hide() }
+        installKeyMonitor()
 
         dropHandler.onItemsAdded = { [ui] _ in
             ui.gulpCount += 1
@@ -85,6 +90,24 @@ final class ShelfPanelController {
         store.refreshAvailability()
         panel.orderFrontRegardless()
         startRefreshing()
+    }
+
+    /// Clear the shelf, from the menu bar or the header button.
+    func clearAll() {
+        interactions.clearAll()
+    }
+
+    /// Space, Delete, Escape and ⌘A/⌘C/⌘O while the shelf is the key window.
+    /// A local monitor sees key events before any view, so SwiftUI focus
+    /// doesn't matter.
+    private func installKeyMonitor() {
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            let handled = MainActor.assumeIsolated {
+                guard let self, event.window === self.panel else { return false }
+                return self.interactions.handleKeyDown(event)
+            }
+            return handled ? nil : event
+        }
     }
 
     private func startRefreshing() {

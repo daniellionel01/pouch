@@ -7,10 +7,16 @@ import SwiftUI
 final class ShelfInteractions {
     let store: ShelfStore
     let ui: ShelfUIState
+    let sounds: SoundPlayer
+    let quickLook = QuickLookController()
     private let settings: AppSettings
-    private let sounds: SoundPlayer
     /// Last plainly-clicked item, the fixed end of a Shift-click range.
     private var anchorID: UUID?
+    /// Card views by item, held weakly, for Quick Look's zoom animation.
+    private let cardViews = NSMapTable<NSUUID, NSView>.strongToWeakObjects()
+
+    /// Escape with nothing selected; the panel controller hides the shelf.
+    var onDismiss: (() -> Void)?
 
     init(store: ShelfStore, ui: ShelfUIState, settings: AppSettings, sounds: SoundPlayer) {
         self.store = store
@@ -37,6 +43,15 @@ final class ShelfInteractions {
         }
     }
 
+    /// Makes `id` the selection unless it's already part of it, like Finder
+    /// does before a right-click or drag.
+    func ensureSelected(_ id: UUID) {
+        if !ui.selection.contains(id) {
+            ui.selection = [id]
+            anchorID = id
+        }
+    }
+
     func clearSelection() {
         ui.selection = []
     }
@@ -56,15 +71,24 @@ final class ShelfInteractions {
         return min(i, j)...max(i, j)
     }
 
+    // MARK: - Card views
+
+    func register(_ view: NSView, for id: UUID) {
+        cardViews.setObject(view, forKey: id as NSUUID)
+    }
+
+    /// The card's frame in screen coordinates, if it's on screen.
+    func screenFrame(of id: UUID) -> NSRect? {
+        guard let view = cardViews.object(forKey: id as NSUUID), let window = view.window else { return nil }
+        return window.convertToScreen(view.convert(view.bounds, to: nil))
+    }
+
     // MARK: - Dragging out
 
     /// The items a drag starting on `id` should carry: the whole selection if
     /// `id` is part of it, otherwise just `id` (which becomes the selection).
     func idsToDrag(startingAt id: UUID) -> [UUID] {
-        if !ui.selection.contains(id) {
-            ui.selection = [id]
-            anchorID = id
-        }
+        ensureSelected(id)
         return orderedSelection.filter { pasteboardWriter(for: $0) != nil }
     }
 

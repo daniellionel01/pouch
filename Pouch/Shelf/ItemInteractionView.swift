@@ -12,11 +12,14 @@ struct ItemInteractionView: NSViewRepresentable {
     let interactions: ShelfInteractions
 
     func makeNSView(context: Context) -> InteractionNSView {
-        InteractionNSView(id: id, interactions: interactions)
+        let view = InteractionNSView(id: id, interactions: interactions)
+        interactions.register(view, for: id)
+        return view
     }
 
     func updateNSView(_ nsView: InteractionNSView, context: Context) {
         nsView.id = id
+        interactions.register(nsView, for: id)
     }
 }
 
@@ -65,6 +68,11 @@ final class InteractionNSView: NSView, NSDraggingSource {
     // MARK: - Clicks
 
     override func mouseDown(with event: NSEvent) {
+        if event.clickCount == 2 {
+            mouseDownEvent = nil
+            interactions.open([id])
+            return
+        }
         mouseDownEvent = event
         // Modifier clicks change the selection right away. A plain click on an
         // already-selected card waits for mouseUp, so dragging a multi-selection
@@ -90,6 +98,10 @@ final class InteractionNSView: NSView, NSDraggingSource {
         guard hypot(now.x - start.x, now.y - start.y) >= Self.dragThreshold else { return }
         mouseDownEvent = nil
         beginDrag(with: down)
+    }
+
+    override func menu(for event: NSEvent) -> NSMenu? {
+        interactions.contextMenu(for: id)
     }
 
     // MARK: - Dragging out

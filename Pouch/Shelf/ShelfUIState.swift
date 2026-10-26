@@ -15,6 +15,10 @@ final class ShelfUIState {
     var flashingIDs: Set<UUID> = []
     /// Bumped whenever something lands in the pouch; drives the gulp squash.
     var gulpCount = 0
+    /// Bumped on "clear all"; drives the shake.
+    var shakeCount = 0
+    /// True while cards tumble out during "clear all".
+    var isTumbling = false
 
     /// Shows the snap flash on `ids` for a moment.
     func flash(_ ids: [UUID]) {

@@ -16,7 +16,7 @@ struct ShelfView: View {
         // can't read main-actor view state directly.
         let reduceMotion = reduceMotion
         VStack(spacing: 0) {
-            ShelfHeader(count: store.items.count)
+            ShelfHeader(count: store.items.count, onClear: interactions.clearAll)
             SeamLine(isActive: ui.isDropTargeted)
             if store.isEmpty {
                 EmptyStateView(isAwake: ui.isDropTargeted)
@@ -55,6 +55,18 @@ struct ShelfView: View {
                 SpringKeyframe(1.0, duration: 0.4, spring: .bouncy)
             }
         }
+        // …and a quick shake on "clear all".
+        .keyframeAnimator(initialValue: 0.0, trigger: ui.shakeCount) { content, angle in
+            content.rotationEffect(.degrees(reduceMotion ? 0 : angle), anchor: .top)
+        } keyframes: { _ in
+            KeyframeTrack {
+                CubicKeyframe(-4, duration: 0.07)
+                CubicKeyframe(4, duration: 0.1)
+                CubicKeyframe(-3, duration: 0.1)
+                CubicKeyframe(2, duration: 0.1)
+                SpringKeyframe(0, duration: 0.3, spring: .bouncy)
+            }
+        }
         .padding(ShelfPanel.margin)
         .environment(\.theme, theme)
         .tint(theme.accent)
@@ -63,6 +75,7 @@ struct ShelfView: View {
 
 private struct ShelfHeader: View {
     var count: Int
+    var onClear: () -> Void
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -72,6 +85,7 @@ private struct ShelfHeader: View {
                 Text("pouch")
                     .font(.system(.headline, design: .rounded).weight(.heavy))
                     .foregroundStyle(theme.accent)
+                    .allowsHitTesting(false)
                 if count > 0 {
                     Text("\(count)")
                         .font(.system(size: 10, weight: .bold, design: .rounded))
@@ -82,14 +96,36 @@ private struct ShelfHeader: View {
                         .background(theme.accent, in: Capsule())
                         .contentTransition(.numericText())
                         .transition(.scale.combined(with: .opacity))
+                        .allowsHitTesting(false)
                 }
                 Spacer()
+                if count > 0 {
+                    Button("Clear", action: onClear)
+                        .buttonStyle(PillButtonStyle())
+                        .help("Shake everything out of the pouch. Your files stay where they are.")
+                        .transition(.scale.combined(with: .opacity))
+                }
             }
-            .allowsHitTesting(false)
         }
         .padding(.horizontal, 14)
         .padding(.top, 6)
         .padding(.bottom, 8)
+    }
+}
+
+private struct PillButtonStyle: ButtonStyle {
+    @Environment(\.theme) private var theme
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 11, weight: .bold, design: .rounded))
+            .foregroundStyle(theme.accent)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 3)
+            .background(theme.accent.opacity(configuration.isPressed ? 0.3 : 0.15), in: Capsule())
+            .scaleEffect(configuration.isPressed ? 0.92 : 1)
+            .animation(.pouchHover, value: configuration.isPressed)
+            .contentShape(Capsule())
     }
 }
 

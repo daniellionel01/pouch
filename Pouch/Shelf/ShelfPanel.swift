@@ -1,4 +1,5 @@
 import AppKit
+import QuickLookUI
 
 /// The floating shelf window.
 ///
@@ -45,4 +46,34 @@ final class ShelfPanel: NSPanel {
     // shelf can handle Space (Quick Look) and Delete after you click it.
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
+
+    // MARK: - Quick Look
+    // QLPreviewPanel walks the responder chain looking for an object that
+    // accepts control; the key window is part of that chain. These methods
+    // come from an Objective-C category on NSObject and aren't marked as
+    // main-actor, but AppKit only calls them on the main thread. `panel` is
+    // always the shared preview panel, so we use that rather than passing
+    // the non-Sendable parameter across.
+
+    var quickLook: QuickLookController?
+
+    override func acceptsPreviewPanelControl(_ panel: QLPreviewPanel!) -> Bool {
+        MainActor.assumeIsolated { quickLook != nil }
+    }
+
+    override func beginPreviewPanelControl(_ panel: QLPreviewPanel!) {
+        MainActor.assumeIsolated {
+            let shared = QLPreviewPanel.shared()
+            shared?.dataSource = quickLook
+            shared?.delegate = quickLook
+        }
+    }
+
+    override func endPreviewPanelControl(_ panel: QLPreviewPanel!) {
+        MainActor.assumeIsolated {
+            let shared = QLPreviewPanel.shared()
+            shared?.dataSource = nil
+            shared?.delegate = nil
+        }
+    }
 }

@@ -12,7 +12,7 @@ struct ShelfGrid: View {
     var body: some View {
         ScrollView(.vertical) {
             LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(store.items) { item in
+                ForEach(Array(store.items.enumerated()), id: \.element.id) { index, item in
                     ItemCardView(
                         item: item,
                         fileURL: store.fileURL(for: item.id),
@@ -24,6 +24,7 @@ struct ShelfGrid: View {
                     )
                     // Clicks, hover and drag-out are handled in AppKit.
                     .overlay(ItemInteractionView(id: item.id, interactions: interactions))
+                    .modifier(Tumble(isTumbling: ui.isTumbling, index: index, seed: item.id))
                     .transition(.pouchDropIn)
                 }
             }
@@ -34,5 +35,27 @@ struct ShelfGrid: View {
         .scrollIndicators(.never)
         // Clicking between cards deselects (and drags the window).
         .background(WindowDragArea(onClick: interactions.clearSelection))
+    }
+}
+
+/// "Clear all": each card falls out of the pouch with a spin, one after another.
+private struct Tumble: ViewModifier {
+    var isTumbling: Bool
+    var index: Int
+    var seed: UUID
+
+    func body(content: Content) -> some View {
+        content
+            .rotationEffect(.degrees(isTumbling ? spin : 0))
+            .offset(y: isTumbling ? 420 : 0)
+            .opacity(isTumbling ? 0 : 1)
+            .animation(
+                isTumbling ? .easeIn(duration: 0.45).delay(Double(min(index, 12)) * 0.03) : nil,
+                value: isTumbling
+            )
+    }
+
+    private var spin: Double {
+        Double(Int(seed.uuid.1) % 61 - 30)
     }
 }
