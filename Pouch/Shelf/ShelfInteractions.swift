@@ -16,7 +16,7 @@ final class ShelfInteractions {
     private let cardViews = NSMapTable<NSUUID, NSView>.strongToWeakObjects()
 
     /// Escape with nothing selected, or the pull tab; the panel
-    /// controller tucks the shelf into the menu bar.
+    /// controller puts the shelf away.
     var onDismiss: (() -> Void)?
 
     func collapse() {

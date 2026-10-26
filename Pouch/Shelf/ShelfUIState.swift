@@ -6,6 +6,8 @@ import SwiftUI
 @MainActor
 @Observable
 final class ShelfUIState {
+    /// Drives the pop-in/shrink-away when the shelf is shown or hidden.
+    var isPresented = false
     var isDropTargeted = false
     var hoveredID: UUID?
     var selection: Set<UUID> = []

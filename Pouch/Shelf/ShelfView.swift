@@ -73,6 +73,9 @@ struct ShelfView: View {
                 SpringKeyframe(0, duration: 0.3, spring: .snappy)
             }
         }
+        // Showing pops the pouch up in place; hiding shrinks it away.
+        .scaleEffect(ui.isPresented || reduceMotion ? 1 : 0.9)
+        .opacity(ui.isPresented ? 1 : 0)
         .padding(ShelfPanel.margin)
         .environment(\.theme, theme)
         .tint(theme.controlTint)

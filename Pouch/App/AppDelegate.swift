@@ -24,7 +24,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let statusItemController = StatusItemController(shelf: shelf, store: store)
         statusItemController.onOpenSettings = { [weak self] in self?.settingsWindow.show() }
         self.statusItemController = statusItemController
-        shelf.tuckTarget = { [weak statusItemController] in statusItemController?.buttonScreenFrame }
         hotkey = HotkeyController { [weak shelf] in shelf?.toggle() }
         if shelf.wasVisibleLastTime { shelf.show() }
 

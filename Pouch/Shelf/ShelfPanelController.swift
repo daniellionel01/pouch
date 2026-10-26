@@ -24,14 +24,8 @@ final class ShelfPanelController {
     private var keyMonitor: Any?
     /// Whether the shelf is (or is animating to be) on screen.
     private var isShown = false
-    /// Where the panel lives while a tuck/untuck animation moves it around.
-    /// Restored afterwards so the remembered position never drifts.
-    private var homeOrigin: NSPoint?
     /// Increments per animation so a stale completion handler does nothing.
     private var animationGeneration = 0
-
-    /// The menu bar icon's frame in screen coordinates; the shelf tucks into it.
-    var tuckTarget: (() -> NSRect?)?
 
     init(store: ShelfStore, settings: AppSettings, inbox: DropInbox?, sounds: SoundPlayer) {
         self.store = store
@@ -82,7 +76,7 @@ final class ShelfPanelController {
         present()
     }
 
-    /// Tucks the shelf back into the menu bar icon.
+    /// Puts the shelf away; it comes back from the menu bar icon or ⌥⌘P.
     func hide() {
         cancelPeek()
         UserDefaults.standard.set(false, forKey: Self.visibleDefaultsKey)
@@ -126,35 +120,39 @@ final class ShelfPanelController {
         peekTask = nil
     }
 
-    // MARK: - Tuck animation
-    // The shelf slides out of (and back into) the menu bar icon while fading.
-    // Only the window's position and alpha animate; resizing it would make
-    // SwiftUI re-lay out the content every frame.
+    // MARK: - Show/hide animation
+    // The pouch pops up in place and shrinks away in place; the window never
+    // moves. (Sliding it toward the menu bar icon looked fine from the
+    // default top-right spot but sent it across the screen from anywhere
+    // else.) SwiftUI scales the pouch while the window's alpha fades, which
+    // also fades the window shadow with it.
 
     private func present() {
         store.refreshAvailability()
         startRefreshing()
         director.clearReaction()
         director.start()
-        guard !isShown || homeOrigin != nil else {
+        guard !isShown else {
             panel.orderFrontRegardless()
             return
         }
         isShown = true
-        let home = homeOrigin ?? panel.frame.origin
-        guard let tucked = tuckedOrigin(home: home) else {
-            finishAnimation(alpha: 1)
-            panel.orderFrontRegardless()
-            return
-        }
-        if !panel.isVisible {
-            panel.alphaValue = 0
-            panel.setFrameOrigin(tucked)
-        }
-        homeOrigin = home
+        animationGeneration += 1
+        let generation = animationGeneration
+        if !panel.isVisible { panel.alphaValue = 0 }
         panel.orderFrontRegardless()
-        animate(to: home, alpha: 1, duration: 0.3, timing: .easeOut) { [weak self] in
-            self?.finishAnimation(alpha: 1)
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.16
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            panel.animator().alphaValue = 1
+        }
+        withAnimation(.spring(response: 0.34, dampingFraction: 0.72)) { ui.isPresented = true }
+        Task { [weak self] in
+            // The window server's shadow follows the content's shape; refresh
+            // it once the pop has settled.
+            try? await Task.sleep(for: .seconds(0.45))
+            guard let self, generation == self.animationGeneration else { return }
+            self.panel.invalidateShadow()
         }
     }
 
@@ -163,57 +161,21 @@ final class ShelfPanelController {
         director.stop()
         guard isShown else { return }
         isShown = false
-        let home = homeOrigin ?? panel.frame.origin
-        guard let tucked = tuckedOrigin(home: home) else {
-            panel.orderOut(nil)
-            return
-        }
-        homeOrigin = home
-        animate(to: tucked, alpha: 0, duration: 0.22, timing: .easeIn) { [weak self] in
-            guard let self else { return }
-            self.panel.orderOut(nil)
-            self.finishAnimation(alpha: 1)
-        }
-    }
-
-    private func animate(to origin: NSPoint, alpha: CGFloat, duration: TimeInterval, timing: CAMediaTimingFunctionName, completion: @escaping @MainActor () -> Void) {
         animationGeneration += 1
         let generation = animationGeneration
+        withAnimation(.easeIn(duration: 0.16)) { ui.isPresented = false }
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = duration
-            context.timingFunction = CAMediaTimingFunction(name: timing)
-            // The window animator only animates `setFrame`; `setFrameOrigin`
-            // silently does nothing, so the panel would sit still and then
-            // snap into place when the animation ends.
-            panel.animator().setFrame(NSRect(origin: origin, size: panel.frame.size), display: true)
-            panel.animator().alphaValue = alpha
+            context.duration = 0.18
+            context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            panel.animator().alphaValue = 0
         } completionHandler: { [weak self] in
             MainActor.assumeIsolated {
-                // A newer animation has taken over; let it finish instead.
+                // Shown again before the fade finished: leave it on screen.
                 guard let self, generation == self.animationGeneration else { return }
-                completion()
+                self.panel.orderOut(nil)
+                self.panel.alphaValue = 1
             }
         }
-    }
-
-    /// Puts the panel back at its home position (which also keeps the
-    /// autosaved frame correct).
-    private func finishAnimation(alpha: CGFloat) {
-        if let homeOrigin { panel.setFrameOrigin(homeOrigin) }
-        homeOrigin = nil
-        panel.alphaValue = alpha
-    }
-
-    /// Most of the way from the shelf's top edge to the menu bar icon. Nil
-    /// (no animation) with Reduce Motion or when the icon can't be found.
-    private func tuckedOrigin(home: NSPoint) -> NSPoint? {
-        guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion, let target = tuckTarget?() else { return nil }
-        let frame = NSRect(origin: home, size: panel.frame.size)
-        let progress: CGFloat = 0.75
-        return NSPoint(
-            x: home.x + (target.midX - frame.midX) * progress,
-            y: home.y + (target.minY - frame.maxY) * progress
-        )
     }
 
     /// Clear the shelf, from the menu bar or the header button.
