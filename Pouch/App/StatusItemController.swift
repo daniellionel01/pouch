@@ -66,6 +66,12 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         clearItem.isEnabled = !store.isEmpty
     }
 
+    /// The icon's frame on screen, for the shelf's tuck animation.
+    var buttonScreenFrame: NSRect? {
+        guard let button = statusItem.button, let window = button.window else { return nil }
+        return window.convertToScreen(button.convert(button.bounds, to: nil))
+    }
+
     private func updateCount() {
         let count = store.items.count
         statusItem.button?.title = count > 0 ? " \(count)" : ""

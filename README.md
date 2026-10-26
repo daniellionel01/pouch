@@ -45,6 +45,8 @@ The first time a screenshot is collected, macOS asks whether Pouch may access yo
 | Esc | Deselect, or hide the shelf |
 | ⌘-click / ⇧-click | Add to the selection / select a range |
 
+To put the shelf away, click the **⌃** button in its header (or press ⌥⌘P, or Esc). It tucks itself into the menu bar icon and pops back out from there. Pouch remembers whether you left it open or tucked away.
+
 The shelf handles keys once you've clicked it. Right-click an item for Open, Reveal in Finder, Quick Look, Copy and Remove.
 
 > Note: ⌥⌘P is also Finder's "Show Path Bar". Pouch's global shortcut wins while Pouch is running; pick another one in Settings if you use that.

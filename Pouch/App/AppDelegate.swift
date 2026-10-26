@@ -24,8 +24,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let statusItemController = StatusItemController(shelf: shelf, store: store)
         statusItemController.onOpenSettings = { [weak self] in self?.settingsWindow.show() }
         self.statusItemController = statusItemController
+        shelf.tuckTarget = { [weak statusItemController] in statusItemController?.buttonScreenFrame }
         hotkey = HotkeyController { [weak shelf] in shelf?.toggle() }
-        shelf.show()
+        if shelf.wasVisibleLastTime { shelf.show() }
 
         screenshotWatcher.onScreenshot = { [weak self] url in self?.collectScreenshot(at: url) }
         updateScreenshotWatcher(enabled: settings.collectScreenshots)

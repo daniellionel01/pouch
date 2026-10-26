@@ -16,7 +16,7 @@ struct ShelfView: View {
         // can't read main-actor view state directly.
         let reduceMotion = reduceMotion
         VStack(spacing: 0) {
-            ShelfHeader(count: store.items.count, onClear: interactions.clearAll)
+            ShelfHeader(count: store.items.count, onClear: interactions.clearAll, onCollapse: interactions.collapse)
             SeamLine(isActive: ui.isDropTargeted)
             if store.isEmpty {
                 EmptyStateView(isAwake: ui.isDropTargeted)
@@ -76,6 +76,7 @@ struct ShelfView: View {
 private struct ShelfHeader: View {
     var count: Int
     var onClear: () -> Void
+    var onCollapse: () -> Void
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -105,6 +106,14 @@ private struct ShelfHeader: View {
                         .help("Shake everything out of the pouch. Your files stay where they are.")
                         .transition(.scale.combined(with: .opacity))
                 }
+                Button(action: onCollapse) {
+                    Image(systemName: "chevron.up")
+                        .font(.system(size: 10, weight: .heavy))
+                        .frame(width: 22, height: 22)
+                }
+                .buttonStyle(PillButtonStyle(circular: true))
+                .help("Tuck into the menu bar (⌥⌘P or Esc)")
+                .accessibilityLabel("Hide shelf")
             }
         }
         .padding(.horizontal, 14)
@@ -114,14 +123,15 @@ private struct ShelfHeader: View {
 }
 
 private struct PillButtonStyle: ButtonStyle {
+    var circular = false
     @Environment(\.theme) private var theme
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 11, weight: .bold, design: .rounded))
             .foregroundStyle(theme.accent)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 3)
+            .padding(.horizontal, circular ? 0 : 9)
+            .padding(.vertical, circular ? 0 : 3)
             .background(theme.accent.opacity(configuration.isPressed ? 0.3 : 0.15), in: Capsule())
             .scaleEffect(configuration.isPressed ? 0.92 : 1)
             .animation(.pouchHover, value: configuration.isPressed)
