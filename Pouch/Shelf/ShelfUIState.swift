@@ -1,4 +1,5 @@
 import Observation
+import PouchCore
 import SwiftUI
 
 /// Transient, view-only state for the shelf (hover, selection, effects).
@@ -6,8 +7,9 @@ import SwiftUI
 @MainActor
 @Observable
 final class ShelfUIState {
-    /// Drives the pop-in/shrink-away when the shelf is shown or hidden.
-    var isPresented = false
+    /// True while the shelf is tucked against the screen edge.
+    var isTucked = true
+    var dockSide: DockSide = .right
     var isDropTargeted = false
     var hoveredID: UUID?
     var selection: Set<UUID> = []

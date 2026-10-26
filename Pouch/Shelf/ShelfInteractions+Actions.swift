@@ -103,6 +103,7 @@ extension ShelfInteractions {
         let count = ids.count
 
         let menu = NSMenu()
+        menu.delegate = menuTracker
         // We set isEnabled ourselves; auto-enabling would enable everything
         // because every item has a valid target.
         menu.autoenablesItems = false

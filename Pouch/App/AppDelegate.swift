@@ -25,7 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItemController.onOpenSettings = { [weak self] in self?.settingsWindow.show() }
         self.statusItemController = statusItemController
         hotkey = HotkeyController { [weak shelf] in shelf?.toggle() }
-        if shelf.wasVisibleLastTime { shelf.show() }
+        shelf.dock()
 
         screenshotWatcher.onScreenshot = { [weak self] url in self?.collectScreenshot(at: url) }
         updateScreenshotWatcher(enabled: settings.collectScreenshots)
@@ -53,9 +53,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             settingsWindow.show()
             if let window = settingsWindow.window { DebugSnapshot.scheduleIfRequested(for: window) }
         } else if environment["POUCH_SNAPSHOT"] != nil {
-            // Peek rather than show, so snapshots never change whether you
-            // left the shelf open.
-            shelf.peek(for: .seconds(30))
+            // Slide it out so there's something to see, unless the tucked
+            // strip is what's being checked.
+            if environment["POUCH_DEBUG_TUCKED"] == nil { shelf.peek(for: .seconds(30)) }
             DebugSnapshot.scheduleIfRequested(for: shelf.panel)
         }
         #endif

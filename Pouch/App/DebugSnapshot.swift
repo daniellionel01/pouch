@@ -7,6 +7,7 @@ import AppKit
 /// `POUCH_SNAPSHOT_WINDOW=settings` to capture the Settings window instead,
 /// `POUCH_APPEARANCE=dark|light` to force an appearance, and
 /// `POUCH_DEBUG_HOVER=1` to show the shelf as if something hovers over it,
+/// `POUCH_DEBUG_TUCKED=1` to capture it tucked against the edge,
 /// and `POUCH_DEBUG_REACT=gulp|snap|shake` to fire a reaction after 1 s. Materials and
 /// glass don't render this way, so the background looks flat.
 enum DebugSnapshot {

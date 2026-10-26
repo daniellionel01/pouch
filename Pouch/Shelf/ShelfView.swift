@@ -36,7 +36,7 @@ struct ShelfView: View {
                             .transition(.opacity)
                     }
                 }
-                FlapView(character: character, isOpen: ui.isDropTargeted)
+                FlapView(character: character, isOpen: ui.isDropTargeted, peekOffset: peekOffset)
             }
             .frame(width: ShelfPanel.contentWidth)
             .frame(maxHeight: .infinity)
@@ -74,11 +74,15 @@ struct ShelfView: View {
                 SpringKeyframe(0, duration: 0.3, spring: .snappy)
             }
         }
-        // Showing pops the pouch up in place; hiding shrinks it away.
-        .scaleEffect(ui.isPresented || reduceMotion ? 1 : 0.9)
-        .opacity(ui.isPresented ? 1 : 0)
         .padding(ShelfPanel.margin)
         .environment(\.theme, theme)
         .tint(theme.controlTint)
+    }
+
+    /// While tucked, the face slides over to the strip that's still on
+    /// screen, so one eye peeks out from behind the screen edge.
+    private var peekOffset: CGFloat {
+        guard ui.isTucked else { return 0 }
+        return ui.dockSide == .right ? -FlapView.peekDistance : FlapView.peekDistance
     }
 }

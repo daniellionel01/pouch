@@ -17,6 +17,9 @@ final class ShelfInteractions {
 
     /// Escape with nothing selected; the panel controller puts the shelf away.
     var onDismiss: (() -> Void)?
+    /// Knows when a context menu is open, so the shelf doesn't tuck away
+    /// underneath it.
+    let menuTracker = MenuTracker()
 
     init(store: ShelfStore, ui: ShelfUIState, settings: AppSettings, sounds: SoundPlayer) {
         self.store = store
@@ -140,4 +143,13 @@ final class ShelfInteractions {
             ui.selection.subtract(ids)
         }
     }
+}
+
+/// Tracks whether a context menu is on screen.
+@MainActor
+final class MenuTracker: NSObject, NSMenuDelegate {
+    private(set) var isOpen = false
+
+    func menuWillOpen(_ menu: NSMenu) { isOpen = true }
+    func menuDidClose(_ menu: NSMenu) { isOpen = false }
 }

@@ -12,8 +12,8 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private lazy var menu = makeMenu()
     private let toggleItem = NSMenuItem(title: "Show Shelf", action: #selector(toggleShelf), keyEquivalent: "")
     private let clearItem = NSMenuItem(title: "Clear Shelf", action: #selector(clearShelf), keyEquivalent: "")
-    private let icon = NSImage(systemSymbolName: "tray", accessibilityDescription: "Pouch")
-    private let celebrationIcon = NSImage(systemSymbolName: "tray.and.arrow.down.fill", accessibilityDescription: "Pouch")
+    private let icon = MenuBarIcon.image(.awake)
+    private let celebrationIcon = MenuBarIcon.image(.delighted)
     private var celebrationTask: Task<Void, Never>?
 
     /// Called for "Settings…".
@@ -83,7 +83,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     // Refresh titles right before the menu opens instead of tracking state.
     func menuNeedsUpdate(_ menu: NSMenu) {
-        toggleItem.title = shelf.isVisible ? "Hide Shelf" : "Show Shelf"
+        toggleItem.title = shelf.isRevealed ? "Tuck Away" : "Show Shelf"
         clearItem.isEnabled = !store.isEmpty
     }
 
@@ -93,7 +93,8 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         statusItem.button?.setAccessibilityLabel(count > 0 ? "Pouch, \(count) items" : "Pouch")
     }
 
-    /// A quick "got it!" in the menu bar, e.g. when a screenshot is collected.
+    /// The little pouch squints happily for a moment, e.g. when a screenshot
+    /// is collected.
     func celebrate() {
         statusItem.button?.image = celebrationIcon
         celebrationTask?.cancel()
@@ -110,7 +111,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     @objc private func clearShelf() {
         // Show the shelf so the tumble animation is visible.
-        if !shelf.isVisible { shelf.show() }
+        if !shelf.isRevealed { shelf.show() }
         shelf.clearAll()
     }
 
