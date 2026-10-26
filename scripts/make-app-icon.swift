@@ -8,87 +8,112 @@
 
 import AppKit
 
-let kangaroo = NSColor(srgbRed: 0.91, green: 0.55, blue: 0.27, alpha: 1)
-let cream = NSColor(srgbRed: 1.0, green: 0.97, blue: 0.93, alpha: 1)
-let cocoa = NSColor(srgbRed: 0.38, green: 0.22, blue: 0.12, alpha: 1)
+// Flat colors only, matching the app (see Pouch/Design/Palette.swift and Theme.swift).
+let canvas = NSColor(srgbRed: 0.945, green: 0.918, blue: 0.867, alpha: 1)   // #F1EADD
+let tomato = NSColor(srgbRed: 0.816, green: 0.290, blue: 0.153, alpha: 1)   // #D04A27
+let thread = NSColor(srgbRed: 0.965, green: 0.863, blue: 0.761, alpha: 1)   // #F6DCC2
+let eyeWhite = NSColor(srgbRed: 0.984, green: 0.969, blue: 0.937, alpha: 1) // #FBF7EF
+let pupil = NSColor(srgbRed: 0.118, green: 0.098, blue: 0.082, alpha: 1)    // #1E1915
+let metal = NSColor(srgbRed: 0.812, green: 0.780, blue: 0.729, alpha: 1)    // #CFC7BA
+let metalRim = NSColor(srgbRed: 0.561, green: 0.529, blue: 0.482, alpha: 1) // #8F877B
+let sky = NSColor(srgbRed: 0.612, green: 0.765, blue: 0.902, alpha: 1)
+let hill = NSColor(srgbRed: 0.498, green: 0.639, blue: 0.357, alpha: 1)
 
-func roundedPath(_ rect: NSRect, top: CGFloat, bottom: CGFloat) -> NSBezierPath {
-    // AppKit's origin is bottom-left, so "bottom" corners are at minY.
+/// The flap: square top, sides that meet in a soft point (AppKit's y is up).
+func flapPath(inset: CGFloat) -> NSBezierPath {
+    let left = 100 + inset, right = 924 - inset, top = 924 - inset
+    let side: CGFloat = 575 + inset * 0.6
+    let tip = NSPoint(x: 512, y: 470 + inset)
     let path = NSBezierPath()
-    path.move(to: NSPoint(x: rect.minX + bottom, y: rect.minY))
-    path.line(to: NSPoint(x: rect.maxX - bottom, y: rect.minY))
-    path.appendArc(withCenter: NSPoint(x: rect.maxX - bottom, y: rect.minY + bottom), radius: bottom, startAngle: 270, endAngle: 360)
-    path.line(to: NSPoint(x: rect.maxX, y: rect.maxY - top))
-    path.appendArc(withCenter: NSPoint(x: rect.maxX - top, y: rect.maxY - top), radius: top, startAngle: 0, endAngle: 90)
-    path.line(to: NSPoint(x: rect.minX + top, y: rect.maxY))
-    path.appendArc(withCenter: NSPoint(x: rect.minX + top, y: rect.maxY - top), radius: top, startAngle: 90, endAngle: 180)
-    path.line(to: NSPoint(x: rect.minX, y: rect.minY + bottom))
-    path.appendArc(withCenter: NSPoint(x: rect.minX + bottom, y: rect.minY + bottom), radius: bottom, startAngle: 180, endAngle: 270)
+    path.move(to: NSPoint(x: left, y: side))
+    path.line(to: NSPoint(x: left, y: top))
+    path.line(to: NSPoint(x: right, y: top))
+    path.line(to: NSPoint(x: right, y: side))
+    path.curve(to: tip, controlPoint1: NSPoint(x: right - 180, y: side - 8), controlPoint2: NSPoint(x: tip.x + 150, y: tip.y))
+    path.curve(to: NSPoint(x: left, y: side), controlPoint1: NSPoint(x: tip.x - 150, y: tip.y), controlPoint2: NSPoint(x: left + 180, y: side - 8))
     path.close()
     return path
 }
 
-func drawIcon() {
-    // Tile with a soft shadow.
-    let tile = NSBezierPath(roundedRect: NSRect(x: 100, y: 100, width: 824, height: 824), xRadius: 185, yRadius: 185)
+func withShadow(_ alpha: CGFloat, blur: CGFloat, y: CGFloat, _ draw: () -> Void) {
     NSGraphicsContext.saveGraphicsState()
     let shadow = NSShadow()
-    shadow.shadowColor = NSColor.black.withAlphaComponent(0.28)
-    shadow.shadowBlurRadius = 28
-    shadow.shadowOffset = NSSize(width: 0, height: -12)
+    shadow.shadowColor = NSColor.black.withAlphaComponent(alpha)
+    shadow.shadowBlurRadius = blur
+    shadow.shadowOffset = NSSize(width: 0, height: y)
     shadow.set()
-    kangaroo.setFill()
-    tile.fill()
+    draw()
     NSGraphicsContext.restoreGraphicsState()
-    NSGradient(colors: [NSColor(srgbRed: 1.0, green: 0.74, blue: 0.45, alpha: 1), NSColor(srgbRed: 0.87, green: 0.45, blue: 0.20, alpha: 1)])?
-        .draw(in: tile, angle: -90)
+}
 
-    // A screenshot polaroid peeking out of the pouch.
+func drawIcon() {
+    // The tile is the pouch body.
+    let tile = NSBezierPath(roundedRect: NSRect(x: 100, y: 100, width: 824, height: 824), xRadius: 185, yRadius: 185)
+    withShadow(0.28, blur: 28, y: -12) {
+        canvas.setFill()
+        tile.fill()
+    }
+
+    NSGraphicsContext.saveGraphicsState()
+    tile.addClip()
+
+    // A photo tucked under the flap.
     NSGraphicsContext.saveGraphicsState()
     let transform = NSAffineTransform()
-    transform.translateX(by: 470, yBy: 620)
-    transform.rotate(byDegrees: 12)
+    transform.translateX(by: 640, yBy: 430)
+    transform.rotate(byDegrees: -9)
     transform.concat()
-    let card = NSBezierPath(roundedRect: NSRect(x: -150, y: -130, width: 300, height: 280), xRadius: 22, yRadius: 22)
-    NSColor.white.setFill()
-    card.fill()
-    let photo = NSBezierPath(roundedRect: NSRect(x: -126, y: -60, width: 252, height: 186), xRadius: 12, yRadius: 12)
-    NSGradient(colors: [NSColor(srgbRed: 0.45, green: 0.62, blue: 1.0, alpha: 1), NSColor(srgbRed: 0.62, green: 0.42, blue: 0.96, alpha: 1)])?
-        .draw(in: photo, angle: -60)
-    NSGraphicsContext.restoreGraphicsState()
-
-    // The pouch.
-    let pouchRect = NSRect(x: 252, y: 190, width: 520, height: 440)
-    let pouch = roundedPath(pouchRect, top: 70, bottom: 210)
-    NSGraphicsContext.saveGraphicsState()
-    let pouchShadow = NSShadow()
-    pouchShadow.shadowColor = NSColor.black.withAlphaComponent(0.18)
-    pouchShadow.shadowBlurRadius = 18
-    pouchShadow.shadowOffset = NSSize(width: 0, height: -8)
-    pouchShadow.set()
-    cream.setFill()
-    pouch.fill()
-    NSGraphicsContext.restoreGraphicsState()
-
-    // Stitching.
-    let stitch = roundedPath(pouchRect.insetBy(dx: 36, dy: 36), top: 40, bottom: 176)
-    stitch.lineWidth = 14
-    stitch.lineCapStyle = .round
-    stitch.setLineDash([26, 24], count: 2, phase: 0)
-    kangaroo.withAlphaComponent(0.55).setStroke()
-    stitch.stroke()
-
-    // Sleepy face.
-    cocoa.setStroke()
-    for centerX in [432.0, 592.0] {
-        let eye = NSBezierPath()
-        eye.appendArc(withCenter: NSPoint(x: centerX, y: 440), radius: 38, startAngle: 200, endAngle: 340)
-        eye.lineWidth = 20
-        eye.lineCapStyle = .round
-        eye.stroke()
+    withShadow(0.16, blur: 10, y: -4) {
+        NSColor.white.setFill()
+        NSBezierPath(rect: NSRect(x: -150, y: -170, width: 300, height: 330)).fill()
     }
-    cocoa.setFill()
-    NSBezierPath(roundedRect: NSRect(x: 482, y: 336, width: 60, height: 22), xRadius: 11, yRadius: 11).fill()
+    sky.setFill()
+    NSBezierPath(rect: NSRect(x: -132, y: -110, width: 264, height: 252)).fill()
+    let hillPath = NSBezierPath()
+    hillPath.move(to: NSPoint(x: -132, y: -110))
+    hillPath.line(to: NSPoint(x: -132, y: -20))
+    hillPath.curve(to: NSPoint(x: 132, y: -40), controlPoint1: NSPoint(x: -40, y: 50), controlPoint2: NSPoint(x: 60, y: 30))
+    hillPath.line(to: NSPoint(x: 132, y: -110))
+    hillPath.close()
+    hill.setFill()
+    hillPath.fill()
+    NSGraphicsContext.restoreGraphicsState()
+
+    // The flap, with its shadow on the body and its stitching.
+    withShadow(0.25, blur: 14, y: -8) {
+        tomato.setFill()
+        flapPath(inset: 0).fill()
+    }
+    let stitch = flapPath(inset: 40)
+    stitch.lineWidth = 13
+    stitch.lineCapStyle = .round
+    stitch.setLineDash([30, 26], count: 2, phase: 0)
+    thread.setStroke()
+    stitch.stroke()
+    NSGraphicsContext.restoreGraphicsState()
+
+    // Eyes, glancing down at what's inside.
+    for centerX in [432.0, 592.0] {
+        eyeWhite.setFill()
+        NSBezierPath(ovalIn: NSRect(x: centerX - 54, y: 650, width: 108, height: 126)).fill()
+        let pupilCenter = NSPoint(x: centerX + 10, y: 692)
+        pupil.setFill()
+        NSBezierPath(ovalIn: NSRect(x: pupilCenter.x - 31, y: pupilCenter.y - 31, width: 62, height: 62)).fill()
+        eyeWhite.setFill()
+        NSBezierPath(ovalIn: NSRect(x: pupilCenter.x - 18, y: pupilCenter.y + 6, width: 18, height: 18)).fill()
+    }
+
+    // The snap.
+    withShadow(0.3, blur: 6, y: -4) {
+        metalRim.setFill()
+        NSBezierPath(ovalIn: NSRect(x: 478, y: 496, width: 68, height: 68)).fill()
+    }
+    metal.setFill()
+    NSBezierPath(ovalIn: NSRect(x: 486, y: 504, width: 52, height: 52)).fill()
+    let ring = NSBezierPath(ovalIn: NSRect(x: 500, y: 518, width: 24, height: 24))
+    ring.lineWidth = 5
+    metalRim.setStroke()
+    ring.stroke()
 }
 
 func png(pixels: Int) -> Data? {

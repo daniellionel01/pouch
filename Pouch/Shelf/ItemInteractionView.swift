@@ -9,16 +9,21 @@ import SwiftUI
 /// `NSDraggingSession` with one `NSDraggingItem` per file does.
 struct ItemInteractionView: NSViewRepresentable {
     let id: UUID
+    /// Shown as the tooltip (this layer sits on top, so SwiftUI's `.help`
+    /// underneath would never be hovered).
+    let name: String
     let interactions: ShelfInteractions
 
     func makeNSView(context: Context) -> InteractionNSView {
         let view = InteractionNSView(id: id, interactions: interactions)
         interactions.register(view, for: id)
+        view.toolTip = name
         return view
     }
 
     func updateNSView(_ nsView: InteractionNSView, context: Context) {
         nsView.id = id
+        nsView.toolTip = name
         interactions.register(nsView, for: id)
     }
 }
@@ -154,6 +159,10 @@ final class InteractionNSView: NSView, NSDraggingSource {
         // when it's dropped into a folder on the same disk, and .delete would
         // let the Dock's Trash eat it.
         context == .outsideApplication ? .copy : []
+    }
+
+    func draggingSession(_ session: NSDraggingSession, movedTo screenPoint: NSPoint) {
+        interactions.dragMoved(to: screenPoint)
     }
 
     func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {

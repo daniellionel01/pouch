@@ -4,7 +4,10 @@ import AppKit
 /// Development aid: `POUCH_SNAPSHOT=/path/to/file.png` makes a Debug build
 /// render the shelf's content view to a PNG shortly after launch. It's handy
 /// for checking layout without Screen Recording permission. Set
-/// `POUCH_SNAPSHOT_WINDOW=settings` to capture the Settings window instead. Materials and
+/// `POUCH_SNAPSHOT_WINDOW=settings` to capture the Settings window instead,
+/// `POUCH_APPEARANCE=dark|light` to force an appearance, and
+/// `POUCH_DEBUG_HOVER=1` to show the shelf as if something hovers over it,
+/// and `POUCH_DEBUG_REACT=gulp|snap|shake` to fire a reaction after 1 s. Materials and
 /// glass don't render this way, so the background looks flat.
 enum DebugSnapshot {
     static func scheduleIfRequested(for window: NSWindow) {

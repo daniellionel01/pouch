@@ -13,14 +13,18 @@ final class ShelfUIState {
     var draggingIDs: Set<UUID> = []
     /// Freshly captured screenshots, flashed briefly.
     var flashingIDs: Set<UUID> = []
-    /// Bumped whenever something lands in the pouch; drives the gulp squash.
+    /// Bumped whenever something is dropped in; drives the swallow.
     var gulpCount = 0
+    /// Bumped when a screenshot arrives; a double take, then a swallow.
+    var snapCount = 0
+    /// Bumped after a successful drag out.
+    var dragOutCount = 0
     /// Bumped on "clear all"; drives the shake.
     var shakeCount = 0
     /// True while cards tumble out during "clear all".
     var isTumbling = false
 
-    /// Shows the snap flash on `ids` for a moment.
+    /// Shows the camera flash on `ids` for a moment.
     func flash(_ ids: [UUID]) {
         flashingIDs.formUnion(ids)
         Task {

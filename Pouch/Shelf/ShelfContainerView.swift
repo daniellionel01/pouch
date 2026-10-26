@@ -6,6 +6,8 @@ import SwiftUI
 final class ShelfContainerView: NSView {
     private let dropHandler: DropHandler
     private let onTargetedChange: (Bool) -> Void
+    /// Cursor position (screen coordinates) while something hovers over the shelf.
+    var onDragMoved: ((NSPoint) -> Void)?
 
     init(content: NSView, dropHandler: DropHandler, onTargetedChange: @escaping (Bool) -> Void) {
         self.dropHandler = dropHandler
@@ -31,7 +33,8 @@ final class ShelfContainerView: NSView {
     }
 
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
-        operation(for: sender)
+        if let window { onDragMoved?(window.convertPoint(toScreen: sender.draggingLocation)) }
+        return operation(for: sender)
     }
 
     override func draggingExited(_ sender: NSDraggingInfo?) {

@@ -1,4 +1,5 @@
 import AppKit
+import ImageIO
 import QuickLookThumbnailing
 
 /// Generates and caches Quick Look thumbnails.
@@ -14,6 +15,8 @@ final class ThumbnailLoader {
     static let shared = ThumbnailLoader()
 
     private let cache = NSCache<NSString, CachedThumbnail>()
+    /// Nil entries remember "not an image" so we don't re-read the file.
+    private var aspectRatios: [String: CGFloat?] = [:]
 
     private final class CachedThumbnail {
         let thumbnail: Thumbnail
@@ -44,6 +47,27 @@ final class ThumbnailLoader {
         }
         cache.setObject(CachedThumbnail(thumbnail), forKey: key)
         return thumbnail
+    }
+
+    /// Width ÷ height of an image file, read from its header only (cheap),
+    /// so items can be laid out at their real shape before the thumbnail
+    /// exists. Nil for anything that isn't an image.
+    func imageAspectRatio(for url: URL) -> CGFloat? {
+        if let known = aspectRatios[url.path] { return known }
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+              let width = properties[kCGImagePropertyPixelWidth] as? CGFloat,
+              let height = properties[kCGImagePropertyPixelHeight] as? CGFloat,
+              width > 0, height > 0
+        else {
+            aspectRatios[url.path] = .some(nil)
+            return nil
+        }
+        // EXIF orientations 5–8 are rotated by 90°.
+        let orientation = properties[kCGImagePropertyOrientation] as? Int ?? 1
+        let ratio = orientation >= 5 ? height / width : width / height
+        aspectRatios[url.path] = ratio
+        return ratio
     }
 
     /// Includes the modification date so edited files get a fresh thumbnail.

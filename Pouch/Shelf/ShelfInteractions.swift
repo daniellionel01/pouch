@@ -115,7 +115,7 @@ final class ShelfInteractions {
     /// A small image for items other than the one under the cursor.
     func dragImage(for id: UUID) -> NSImage {
         if let url = store.fileURL(for: id) {
-            return ThumbnailLoader.shared.cachedThumbnail(for: url, size: ItemCardView.thumbnailSize)?.image
+            return ThumbnailLoader.shared.cachedThumbnail(for: url, size: ItemView.thumbnailSize)?.image
                 ?? ThumbnailLoader.shared.icon(for: url).image
         }
         let symbol = store.item(withID: id).map { $0.isFile ? "doc" : "link" } ?? "doc"
@@ -126,10 +126,19 @@ final class ShelfInteractions {
         ui.draggingIDs = Set(ids)
     }
 
+    /// Cursor position during a drag out, so the pouch can watch it go.
+    var onDragMoved: ((NSPoint) -> Void)?
+
+    func dragMoved(to screenPoint: NSPoint) {
+        onDragMoved?(screenPoint)
+    }
+
     func dragEnded(_ ids: [UUID], operation: NSDragOperation) {
         ui.draggingIDs = []
         // An empty operation means the drop was cancelled or refused.
-        guard operation != [], settings.removeAfterDragOut else { return }
+        guard operation != [] else { return }
+        ui.dragOutCount += 1
+        guard settings.removeAfterDragOut else { return }
         sounds.play(.poof)
         withAnimation(.pouchLand) {
             store.remove(Set(ids))

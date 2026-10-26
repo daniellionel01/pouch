@@ -18,7 +18,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertTrue(settings.showOnNewScreenshot)
         XCTAssertFalse(settings.removeAfterDragOut)
         XCTAssertFalse(settings.soundsEnabled)
-        XCTAssertEqual(settings.theme, .kangaroo)
+        XCTAssertEqual(settings.theme, .tomato)
     }
 
     func testChangesPersist() {
@@ -27,18 +27,18 @@ final class AppSettingsTests: XCTestCase {
         settings.collectScreenshots = false
         settings.removeAfterDragOut = true
         settings.soundsEnabled = true
-        settings.theme = .grape
+        settings.theme = .denim
 
         let reloaded = AppSettings(defaults: defaults)
         XCTAssertFalse(reloaded.collectScreenshots)
         XCTAssertTrue(reloaded.removeAfterDragOut)
         XCTAssertTrue(reloaded.soundsEnabled)
-        XCTAssertEqual(reloaded.theme, .grape)
+        XCTAssertEqual(reloaded.theme, .denim)
     }
 
     func testUnknownThemeFallsBackToDefault() {
         let defaults = makeDefaults()
         defaults.set("plaid", forKey: AppSettings.Key.theme)
-        XCTAssertEqual(AppSettings(defaults: defaults).theme, .kangaroo)
+        XCTAssertEqual(AppSettings(defaults: defaults).theme, .tomato)
     }
 }

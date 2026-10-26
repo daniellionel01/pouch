@@ -18,6 +18,7 @@ final class ShelfPanelController {
     private let store: ShelfStore
     private let dropHandler: DropHandler
     private let interactions: ShelfInteractions
+    private let director: CharacterDirector
     private var refreshTimer: Timer?
     private var peekTask: Task<Void, Never>?
     private var keyMonitor: Any?
@@ -36,16 +37,27 @@ final class ShelfPanelController {
         self.store = store
         dropHandler = DropHandler(store: store, inbox: inbox)
         interactions = ShelfInteractions(store: store, ui: ui, settings: settings, sounds: sounds)
+        director = CharacterDirector(store: store, ui: ui)
 
-        let hostingView = NSHostingView(rootView: ShelfView(store: store, settings: settings, ui: ui, interactions: interactions))
+        let hostingView = NSHostingView(rootView: ShelfView(
+            store: store, settings: settings, ui: ui, interactions: interactions, character: director.character
+        ))
         // Don't let SwiftUI resize the window; the panel's frame is ours.
         hostingView.sizingOptions = []
-        panel.contentView = ShelfContainerView(content: hostingView, dropHandler: dropHandler) { [ui] targeted in
+        let container = ShelfContainerView(content: hostingView, dropHandler: dropHandler) { [ui] targeted in
             if ui.isDropTargeted != targeted { ui.isDropTargeted = targeted }
         }
+        container.onDragMoved = { [director] point in director.cursorMoved(to: point) }
+        panel.contentView = container
+
+        director.faceCenter = { [panel] in
+            NSPoint(x: panel.frame.midX, y: panel.frame.maxY - ShelfPanel.margin - 27)
+        }
+        director.panelFrame = { [panel] in panel.frame }
+        interactions.onDragMoved = { [director] point in director.cursorMoved(to: point) }
 
         panel.quickLook = interactions.quickLook
-        interactions.onDismiss = { [weak self] in self?.hide() }
+        interactions.onDismiss = { [weak self] in self?.closeFromShelf() }
         installKeyMonitor()
 
         dropHandler.onItemsAdded = { [ui] _ in
@@ -75,6 +87,15 @@ final class ShelfPanelController {
         cancelPeek()
         UserDefaults.standard.set(false, forKey: Self.visibleDefaultsKey)
         dismiss()
+    }
+
+    /// The snap or Esc: the pouch shuts its eyes, then tucks itself away.
+    private func closeFromShelf() {
+        director.closeEyes()
+        Task { [weak self] in
+            try? await Task.sleep(for: .seconds(0.14))
+            self?.hide()
+        }
     }
 
     func toggle() {
@@ -113,6 +134,8 @@ final class ShelfPanelController {
     private func present() {
         store.refreshAvailability()
         startRefreshing()
+        director.clearReaction()
+        director.start()
         guard !isShown || homeOrigin != nil else {
             panel.orderFrontRegardless()
             return
@@ -137,6 +160,7 @@ final class ShelfPanelController {
 
     private func dismiss() {
         stopRefreshing()
+        director.stop()
         guard isShown else { return }
         isShown = false
         let home = homeOrigin ?? panel.frame.origin

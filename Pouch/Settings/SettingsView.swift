@@ -49,7 +49,7 @@ struct SettingsView: View {
                 Toggle("Remove items after dragging them out", isOn: $settings.removeAfterDragOut)
             }
 
-            Section("Fun") {
+            Section("Look and sound") {
                 LabeledContent("Colorway") {
                     ColorwayPicker(selection: $settings.theme)
                 }
@@ -60,7 +60,7 @@ struct SettingsView: View {
         .frame(width: 440)
         .fixedSize(horizontal: false, vertical: true)
         .environment(\.theme, theme)
-        .tint(theme.accent)
+        .tint(theme.controlTint)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             // The user may have changed Login Items in System Settings.
             refreshLaunchAtLogin()
@@ -87,16 +87,13 @@ struct SettingsView: View {
 private struct SettingsHeader: View {
     var body: some View {
         HStack(spacing: 14) {
-            // Drawn at its natural size and scaled down, so the face keeps
-            // its proportions.
-            PouchCharacter(isAwake: true)
-                .frame(width: 84, height: 74)
-                .scaleEffect(0.55)
-                .frame(width: 46, height: 41)
+            PouchPortrait()
+                .scaleEffect(0.5)
+                .frame(width: 46, height: 48)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Pouch")
-                    .font(.system(.title2, design: .rounded).weight(.heavy))
-                Text("A tiny shelf for files and screenshots. Version \(Bundle.main.shortVersion)")
+                    .font(.system(size: 20, design: .serif).weight(.semibold))
+                Text("Holds your files and screenshots while you switch apps. Version \(Bundle.main.shortVersion)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -105,30 +102,36 @@ private struct SettingsHeader: View {
     }
 }
 
-/// Round color swatches; the chosen one gets a ring and a little hop.
+/// Fabric swatches: a square of the flap color with its thread stitched
+/// around the edge. The chosen one is outlined.
 private struct ColorwayPicker: View {
     @Binding var selection: ThemeID
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             ForEach(ThemeID.allCases, id: \.self) { id in
                 let theme = Theme.named(id)
                 let isSelected = id == selection
                 Button {
                     withAnimation(.pouchHover) { selection = id }
                 } label: {
-                    Circle()
-                        .fill(theme.accent.gradient)
-                        .frame(width: 20, height: 20)
-                        .padding(3)
-                        .overlay(Circle().strokeBorder(theme.accent, lineWidth: isSelected ? 2 : 0))
-                        .scaleEffect(isSelected ? 1.12 : 1)
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(theme.flap)
+                        .fabricGrain(0.1)
+                        .overlay(RoundedRectangle(cornerRadius: 2).stroke(theme.thread.opacity(0.85), style: .stitch(width: 1)).padding(3))
+                        .frame(width: 24, height: 24)
+                        .padding(2.5)
+                        .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(Palette.ink, lineWidth: isSelected ? 1.5 : 0))
                 }
                 .buttonStyle(.plain)
                 .help(theme.name)
                 .accessibilityLabel(theme.name)
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
+            Text(Theme.named(selection).name)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .frame(width: 58, alignment: .leading)
         }
     }
 }

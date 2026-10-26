@@ -1,13 +1,13 @@
 import Foundation
 import Observation
 
-/// Pouch's colorways. The actual colors live in the app target; this is just
-/// the persisted identifier.
+/// Pouch's colorways, named after the fabric of the flap. The actual colors
+/// live in the app target; this is just the persisted identifier.
 public enum ThemeID: String, CaseIterable, Codable, Sendable {
-    case kangaroo
-    case mint
-    case grape
-    case graphite
+    case tomato
+    case moss
+    case denim
+    case mustard
 }
 
 /// User preferences, backed by `UserDefaults`.
@@ -50,12 +50,12 @@ public final class AppSettings {
             Key.showOnNewScreenshot: true,
             Key.removeAfterDragOut: false,
             Key.soundsEnabled: false,
-            Key.theme: ThemeID.kangaroo.rawValue,
+            Key.theme: ThemeID.tomato.rawValue,
         ])
         collectScreenshots = defaults.bool(forKey: Key.collectScreenshots)
         showOnNewScreenshot = defaults.bool(forKey: Key.showOnNewScreenshot)
         removeAfterDragOut = defaults.bool(forKey: Key.removeAfterDragOut)
         soundsEnabled = defaults.bool(forKey: Key.soundsEnabled)
-        theme = defaults.string(forKey: Key.theme).flatMap(ThemeID.init(rawValue:)) ?? .kangaroo
+        theme = defaults.string(forKey: Key.theme).flatMap(ThemeID.init(rawValue:)) ?? .tomato
     }
 }

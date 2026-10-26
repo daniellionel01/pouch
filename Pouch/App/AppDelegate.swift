@@ -35,7 +35,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         #if DEBUG
-        if ProcessInfo.processInfo.environment["POUCH_SNAPSHOT_WINDOW"] == "settings" {
+        let environment = ProcessInfo.processInfo.environment
+        if environment["POUCH_APPEARANCE"] == "dark" { NSApp.appearance = NSAppearance(named: .darkAqua) }
+        if environment["POUCH_APPEARANCE"] == "light" { NSApp.appearance = NSAppearance(named: .aqua) }
+        if environment["POUCH_DEBUG_HOVER"] != nil { shelf.ui.isDropTargeted = true }
+        if let reaction = environment["POUCH_DEBUG_REACT"] {
+            // Fire a reaction one second in, to snapshot it mid-animation.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                switch reaction {
+                case "gulp": shelf.ui.gulpCount += 1
+                case "snap": shelf.ui.snapCount += 1
+                case "shake": shelf.ui.shakeCount += 1
+                default: break
+                }
+            }
+        }
+        if environment["POUCH_SNAPSHOT_WINDOW"] == "settings" {
             settingsWindow.show()
             if let window = settingsWindow.window { DebugSnapshot.scheduleIfRequested(for: window) }
         } else {
@@ -54,7 +69,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let shelf else { return }
         let added = withAnimation(.pouchLand) { store.addFiles([url], source: .screenshot) }
         shelf.ui.flash(added.map(\.id))
-        shelf.ui.gulpCount += 1
+        shelf.ui.snapCount += 1
         sounds.play(.snap)
         statusItemController?.celebrate()
         if settings.showOnNewScreenshot { shelf.peek() }

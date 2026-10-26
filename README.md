@@ -14,7 +14,14 @@ _Demo GIF coming soon._
 - **Drag out**: one item or a whole selection, as real files, into any app.
 - **Auto-collects screenshots** taken with ⌘⇧3, ⌘⇧4 or ⌘⇧5, wherever you save them.
 - **Quick Look, Reveal in Finder, Copy, Open**, plus a clear-all button.
-- **Some fun along the way.** The pouch sleeps when empty, wakes up and opens wide when you drag something over it, and gulps things down. New screenshots arrive with a camera flash. "Clear" shakes everything out. It comes in four colorways (Kangaroo, Mint, Grape, Graphite), with optional sound effects. Everything respects Reduce Motion.
+- **It's a little creature.** The shelf is a canvas pouch with a stitched flap, and the flap has eyes.
+  - Its eyes follow your cursor, blink, and wander off when you stop moving.
+  - It naps when it's empty, and wakes up when you come close.
+  - When you drag something over it, the flap lifts open. Drop it, and you can see it swallow.
+  - New screenshots get a double take, and "Empty" shakes everything out.
+  - Click the snap on the flap to close it.
+- **Things look like what they are.** Screenshots and photos keep their real shape, text arrives as a paper slip, and links as a luggage tag.
+- **Four fabrics**: Tomato, Moss, Denim and Mustard, plus optional sound effects. Everything respects Reduce Motion.
 
 No accounts, no cloud, no analytics.
 
@@ -45,7 +52,7 @@ The first time a screenshot is collected, macOS asks whether Pouch may access yo
 | Esc | Deselect, or hide the shelf |
 | ⌘-click / ⇧-click | Add to the selection / select a range |
 
-To put the shelf away, click the **⌃** button in its header (or press ⌥⌘P, or Esc). It tucks itself into the menu bar icon and pops back out from there. Pouch remembers whether you left it open or tucked away.
+To put the shelf away, click the **snap** on the flap (or press ⌥⌘P, or Esc). It tucks itself into the menu bar icon and pops back out from there. Pouch remembers whether you left it open or tucked away.
 
 The shelf handles keys once you've clicked it. Right-click an item for Open, Reveal in Finder, Quick Look, Copy and Remove.
 
@@ -91,7 +98,8 @@ Pouch/            the app: AppKit windows and menus, SwiftUI views
   App/            app delegate, menu bar, hotkey
   Shelf/          the floating panel, drag in/out, Quick Look, actions
   Settings/       settings window, launch at login
-  Design/         colorways, shapes, animations, the empty-state pouch
+  Character/      the pouch's face, flap and the director that brings it to life
+  Design/         palette, fabric colorways, shapes, grain, motion
 PouchCore/        UI-free model and services (unit tested)
   Models/         ShelfItem, ShelfStore
   Services/       persistence, bookmarks, drop inbox, screenshot watcher
@@ -105,6 +113,8 @@ Debug builds read a few environment variables:
 
 - `POUCH_DATA_DIR=/some/folder` stores the shelf there instead of `~/Library/Application Support/Pouch`.
 - `POUCH_SNAPSHOT=/tmp/shelf.png` renders the shelf to a PNG after launch (`POUCH_SNAPSHOT_DELAY` sets the delay in seconds, `POUCH_SNAPSHOT_WINDOW=settings` captures Settings instead).
+- `POUCH_APPEARANCE=dark|light` forces an appearance, `POUCH_DEBUG_HOVER=1` shows the drop-hover state, and `POUCH_DEBUG_REACT=gulp|snap|shake` fires a reaction after one second (handy with a snapshot delay of about 1.2 s).
+- Any setting can be overridden for one run with a launch argument, e.g. `Pouch.app/Contents/MacOS/Pouch -theme denim`.
 
 ## Where things are stored
 

@@ -1,152 +1,80 @@
 import PouchCore
 import SwiftUI
 
-/// Root view of the floating shelf.
+/// Root view of the floating shelf: the pouch itself.
 struct ShelfView: View {
     var store: ShelfStore
     var settings: AppSettings
     var ui: ShelfUIState
     var interactions: ShelfInteractions
+    var character: Character
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         let theme = Theme.named(settings.theme)
-        // Captured as a constant: the keyframe closure below is Sendable and
-        // can't read main-actor view state directly.
+        // Captured as a constant: the keyframe closures below are Sendable
+        // and can't read main-actor view state directly.
         let reduceMotion = reduceMotion
-        VStack(spacing: 0) {
-            ShelfHeader(count: store.items.count, onClear: interactions.clearAll, onCollapse: interactions.collapse)
-            SeamLine(isActive: ui.isDropTargeted)
-            if store.isEmpty {
-                EmptyStateView(isAwake: ui.isDropTargeted)
-                    .transition(.opacity)
-            } else {
-                ShelfGrid(store: store, ui: ui, interactions: interactions)
-                    .transition(.opacity)
+
+        KeyframeAnimator(initialValue: Swallow(), trigger: ui.gulpCount + ui.snapCount) { swallow in
+            let silhouette = BodyShape(
+                bulgePosition: swallow.position,
+                bulgeAmount: reduceMotion ? 0 : swallow.amount
+            )
+            ZStack(alignment: .top) {
+                VStack(spacing: 0) {
+                    // The flap overlaps the top of the body.
+                    Color.clear.frame(height: FlapView.height - FlapShape.tipDepth)
+                    if store.isEmpty {
+                        EmptyNote(isDropTargeted: ui.isDropTargeted)
+                            .transition(.opacity)
+                    } else {
+                        ShelfMasonry(store: store, ui: ui, interactions: interactions)
+                            .transition(.opacity)
+                    }
+                    ShelfFooter(count: store.items.count, onEmpty: interactions.clearAll)
+                }
+                FlapView(character: character, isOpen: ui.isDropTargeted, onSnap: interactions.collapse)
             }
-        }
-        .frame(width: ShelfPanel.contentWidth)
-        .frame(maxHeight: .infinity)
-        .background {
-            ZStack {
-                PouchBackground()
-                WindowDragArea(onClick: interactions.clearSelection)
+            .frame(width: ShelfPanel.contentWidth)
+            .frame(maxHeight: .infinity)
+            .background {
+                ZStack {
+                    silhouette.fill(Palette.canvas).fabricGrain()
+                    WindowDragArea(onClick: interactions.clearSelection)
+                }
             }
-        }
-        .overlay {
-            PouchShape()
-                .stroke(theme.accent.opacity(ui.isDropTargeted ? 0.9 : 0), lineWidth: 3)
-        }
-        .clipShape(PouchShape())
-        // The "mouth opens" bounce while something hovers over the shelf…
-        .scaleEffect(ui.isDropTargeted && !reduceMotion ? 1.02 : 1)
-        .animation(.spring(response: 0.3, dampingFraction: 0.55), value: ui.isDropTargeted)
-        // …and the "gulp" squash when it lands.
-        .keyframeAnimator(initialValue: Squash(), trigger: ui.gulpCount) { content, squash in
-            content.scaleEffect(x: reduceMotion ? 1 : squash.x, y: reduceMotion ? 1 : squash.y, anchor: .bottom)
+            .clipShape(silhouette)
         } keyframes: { _ in
-            KeyframeTrack(\.y) {
-                CubicKeyframe(0.94, duration: 0.09)
-                SpringKeyframe(1.0, duration: 0.4, spring: .bouncy)
+            // The lump travels from the opening to the bottom.
+            KeyframeTrack(\.position) {
+                LinearKeyframe(0.02, duration: 0.01)
+                CubicKeyframe(1, duration: 0.55)
             }
-            KeyframeTrack(\.x) {
-                CubicKeyframe(1.03, duration: 0.09)
-                SpringKeyframe(1.0, duration: 0.4, spring: .bouncy)
+            KeyframeTrack(\.amount) {
+                CubicKeyframe(3.4, duration: 0.12)
+                LinearKeyframe(2.6, duration: 0.3)
+                CubicKeyframe(0, duration: 0.18)
             }
         }
-        // …and a quick shake on "clear all".
-        .keyframeAnimator(initialValue: 0.0, trigger: ui.shakeCount) { content, angle in
-            content.rotationEffect(.degrees(reduceMotion ? 0 : angle), anchor: .top)
+        // A hard sideways shake when it's emptied. Sideways because a
+        // rotation would swing the bottom out of the window.
+        .keyframeAnimator(initialValue: 0.0, trigger: ui.shakeCount) { content, x in
+            content.offset(x: reduceMotion ? 0 : x)
         } keyframes: { _ in
             KeyframeTrack {
-                CubicKeyframe(-4, duration: 0.07)
-                CubicKeyframe(4, duration: 0.1)
-                CubicKeyframe(-3, duration: 0.1)
-                CubicKeyframe(2, duration: 0.1)
-                SpringKeyframe(0, duration: 0.3, spring: .bouncy)
+                CubicKeyframe(-2, duration: 0.06)
+                CubicKeyframe(5, duration: 0.07)
+                CubicKeyframe(-5, duration: 0.08)
+                CubicKeyframe(4.5, duration: 0.08)
+                CubicKeyframe(-3.5, duration: 0.08)
+                CubicKeyframe(2, duration: 0.08)
+                SpringKeyframe(0, duration: 0.3, spring: .snappy)
             }
         }
         .padding(ShelfPanel.margin)
         .environment(\.theme, theme)
-        .tint(theme.accent)
-    }
-}
-
-private struct ShelfHeader: View {
-    var count: Int
-    var onClear: () -> Void
-    var onCollapse: () -> Void
-    @Environment(\.theme) private var theme
-
-    var body: some View {
-        VStack(spacing: 6) {
-            PullTab()
-            HStack(spacing: 6) {
-                Text("pouch")
-                    .font(.system(.headline, design: .rounded).weight(.heavy))
-                    .foregroundStyle(theme.accent)
-                    .allowsHitTesting(false)
-                if count > 0 {
-                    Text("\(count)")
-                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 1)
-                        .background(theme.accent, in: Capsule())
-                        .contentTransition(.numericText())
-                        .transition(.scale.combined(with: .opacity))
-                        .allowsHitTesting(false)
-                }
-                Spacer()
-                if count > 0 {
-                    Button("Clear", action: onClear)
-                        .buttonStyle(PillButtonStyle())
-                        .help("Shake everything out of the pouch. Your files stay where they are.")
-                        .transition(.scale.combined(with: .opacity))
-                }
-                Button(action: onCollapse) {
-                    Image(systemName: "chevron.up")
-                        .font(.system(size: 10, weight: .heavy))
-                        .frame(width: 22, height: 22)
-                }
-                .buttonStyle(PillButtonStyle(circular: true))
-                .help("Tuck into the menu bar (⌥⌘P or Esc)")
-                .accessibilityLabel("Hide shelf")
-            }
-        }
-        .padding(.horizontal, 14)
-        .padding(.top, 6)
-        .padding(.bottom, 8)
-    }
-}
-
-private struct PillButtonStyle: ButtonStyle {
-    var circular = false
-    @Environment(\.theme) private var theme
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.system(size: 11, weight: .bold, design: .rounded))
-            .foregroundStyle(theme.accent)
-            .padding(.horizontal, circular ? 0 : 9)
-            .padding(.vertical, circular ? 0 : 3)
-            .background(theme.accent.opacity(configuration.isPressed ? 0.3 : 0.15), in: Capsule())
-            .scaleEffect(configuration.isPressed ? 0.92 : 1)
-            .animation(.pouchHover, value: configuration.isPressed)
-            .contentShape(Capsule())
-    }
-}
-
-/// The little zipper-pull at the top. Purely decorative; the whole background
-/// drags the window.
-private struct PullTab: View {
-    var body: some View {
-        Capsule()
-            .fill(.secondary.opacity(0.5))
-            .frame(width: 34, height: 5)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
+        .tint(theme.controlTint)
     }
 }
