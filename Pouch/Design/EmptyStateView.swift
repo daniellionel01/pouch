@@ -27,7 +27,8 @@ struct EmptyStateView: View {
     }
 }
 
-private struct PouchCharacter: View {
+/// The pouch mascot. Also used in the Settings header.
+struct PouchCharacter: View {
     var isAwake: Bool
     @Environment(\.theme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion

@@ -13,6 +13,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var shelf: ShelfPanelController?
     private var statusItemController: StatusItemController?
     private var hotkey: HotkeyController?
+    private lazy var settingsWindow = SettingsWindowController(settings: settings)
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let inbox = makeStorage()
@@ -20,7 +21,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let shelf = ShelfPanelController(store: store, settings: settings, inbox: inbox, sounds: sounds)
         self.shelf = shelf
-        statusItemController = StatusItemController(shelf: shelf, store: store)
+        let statusItemController = StatusItemController(shelf: shelf, store: store)
+        statusItemController.onOpenSettings = { [weak self] in self?.settingsWindow.show() }
+        self.statusItemController = statusItemController
         hotkey = HotkeyController { [weak shelf] in shelf?.toggle() }
         shelf.show()
 
@@ -31,7 +34,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         #if DEBUG
-        DebugSnapshot.scheduleIfRequested(for: shelf.panel)
+        if ProcessInfo.processInfo.environment["POUCH_SNAPSHOT_WINDOW"] == "settings" {
+            settingsWindow.show()
+            if let window = settingsWindow.window { DebugSnapshot.scheduleIfRequested(for: window) }
+        } else {
+            DebugSnapshot.scheduleIfRequested(for: shelf.panel)
+        }
         #endif
     }
 
