@@ -7,4 +7,7 @@ import Observation
 @Observable
 final class ShelfUIState {
     var isDropTargeted = false
+    var hoveredID: UUID?
+    /// Bumped whenever something lands in the pouch; drives the gulp squash.
+    var gulpCount = 0
 }

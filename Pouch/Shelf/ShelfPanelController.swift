@@ -6,15 +6,32 @@ import SwiftUI
 @MainActor
 final class ShelfPanelController {
     private static let frameAutosaveName = "PouchShelf"
+    /// How often to re-check that files on the shelf still exist while it's
+    /// visible. Bookmark resolution is cheap, and this keeps the "missing"
+    /// state honest without file-system watchers on every item.
+    private static let refreshInterval: TimeInterval = 5
 
     let panel = ShelfPanel()
     let ui = ShelfUIState()
+    private let store: ShelfStore
+    private let dropHandler: DropHandler
+    private var refreshTimer: Timer?
 
-    init(settings: AppSettings) {
-        let hostingView = NSHostingView(rootView: ShelfView(settings: settings, ui: ui))
+    init(store: ShelfStore, settings: AppSettings, inbox: DropInbox?, sounds: SoundPlayer) {
+        self.store = store
+        dropHandler = DropHandler(store: store, inbox: inbox)
+
+        let hostingView = NSHostingView(rootView: ShelfView(store: store, settings: settings, ui: ui))
         // Don't let SwiftUI resize the window; the panel's frame is ours.
         hostingView.sizingOptions = []
-        panel.contentView = hostingView
+        panel.contentView = ShelfContainerView(content: hostingView, dropHandler: dropHandler) { [ui] targeted in
+            if ui.isDropTargeted != targeted { ui.isDropTargeted = targeted }
+        }
+
+        dropHandler.onItemsAdded = { [ui] _ in
+            ui.gulpCount += 1
+            sounds.play(.gulp)
+        }
         restoreFrame()
     }
 
@@ -23,15 +40,29 @@ final class ShelfPanelController {
     /// Shows the shelf without making it key, so the frontmost app keeps
     /// keyboard focus. It becomes key once you click it.
     func show() {
+        store.refreshAvailability()
         panel.orderFrontRegardless()
+        startRefreshing()
     }
 
     func hide() {
         panel.orderOut(nil)
+        refreshTimer?.invalidate()
+        refreshTimer = nil
     }
 
     func toggle() {
         isVisible ? hide() : show()
+    }
+
+    private func startRefreshing() {
+        guard refreshTimer == nil else { return }
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: Self.refreshInterval, repeats: true) { [weak self] _ in
+            // Scheduled on the main run loop, so we're already on the main actor.
+            MainActor.assumeIsolated {
+                withAnimation(.pouchLand) { self?.store.refreshAvailability() }
+            }
+        }
     }
 
     private func restoreFrame() {
