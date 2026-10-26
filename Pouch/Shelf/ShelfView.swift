@@ -21,7 +21,7 @@ struct ShelfView: View {
             pouch(reduceMotion: reduceMotion)
                 .opacity(ui.isTucked ? 0 : 1)
                 .allowsHitTesting(!ui.isTucked)
-            TuckedTab(character: character, side: ui.dockSide, isHovered: ui.isTabHovered)
+            TuckedTab(count: store.items.count, side: ui.dockSide, isHovered: ui.isTabHovered, knocks: ui.tabKnocks)
                 // Click the tab to open; drag it to move the shelf.
                 .background(WindowDragArea(onClick: interactions.revealShelf))
                 .padding(ShelfPanel.margin)

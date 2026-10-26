@@ -11,6 +11,8 @@ final class ShelfUIState {
     var isTucked = true
     /// The cursor is resting on the tucked tab.
     var isTabHovered = false
+    /// Bumped when something arrives while the shelf is tucked.
+    var tabKnocks = 0
     var dockSide: DockSide = .right
     var isDropTargeted = false
     var hoveredID: UUID?

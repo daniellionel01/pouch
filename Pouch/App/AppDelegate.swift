@@ -74,7 +74,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         shelf.ui.snapCount += 1
         sounds.play(.snap)
         statusItemController?.celebrate()
-        if settings.showOnNewScreenshot { shelf.peek() }
+        if settings.showOnNewScreenshot {
+            shelf.peek()
+        } else {
+            shelf.knock()
+        }
     }
 
     // MARK: - Storage

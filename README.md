@@ -9,13 +9,13 @@ _Demo GIF coming soon._
 
 ## What it does
 
-- **Tucked against the screen edge**: the shelf sits against the right (or left) edge as a small leather tab with one eye. Hover it, drag a file onto it, or take a screenshot and it slides out, then tucks away again when you move on. It's on every Space and over full-screen apps, and never steals focus.
+- **Tucked against the screen edge**: the shelf sits against the right (or left) edge as a small leather tab, with the number of items pressed into it. Hover it, drag a file onto it, or take a screenshot and it slides out, then tucks away again when you move on. It's on every Space and over full-screen apps, and never steals focus.
 - **Drag in**: files, folders, images, links and text. Files are kept by reference (bookmarks), so moving or renaming them doesn't break anything. Nothing is copied.
 - **Drag out**: one item or a whole selection, as real files, into any app.
 - **Auto-collects screenshots** taken with ⌘⇧3, ⌘⇧4 or ⌘⇧5, wherever you save them.
 - **Quick Look, Reveal in Finder, Copy, Open**, plus a clear-all button.
 - **It's a little creature.** The shelf is a canvas pouch with a stitched leather flap, and the flap has eyes.
-  - Its eyes follow your cursor, blink, and wander off when you stop moving. Tucked away, the tab's single eye keeps watching.
+  - Its eyes follow your cursor, blink, and wander off when you stop moving.
   - It naps when it's empty, and wakes up when you come close.
   - When you drag something over it, the flap lifts open. Drop it, and you can see it swallow.
   - New screenshots get a double take, and "Clear all" shakes everything out.

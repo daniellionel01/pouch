@@ -93,7 +93,6 @@ final class ShelfPanelController {
         applyPlacement()
         setFrame(frame(tucked: true))
         panel.orderFrontRegardless()
-        director.start()
     }
 
     var isRevealed: Bool { presence != .tucked }
@@ -111,6 +110,13 @@ final class ShelfPanelController {
 
     func toggle() {
         isRevealed ? tuck() : reveal(pinned: true)
+    }
+
+    /// Something arrived while tucked and the shelf won't open for it: the
+    /// tab knocks against the screen edge instead.
+    func knock() {
+        guard !isRevealed else { return }
+        ui.tabKnocks += 1
     }
 
     /// Slides the shelf out for a few seconds, e.g. when a screenshot arrives.
@@ -132,6 +138,7 @@ final class ShelfPanelController {
         store.refreshAvailability()
         startRefreshing()
         startWatchingForLeave()
+        director.start()
         withAnimation(.pouchCharacter) { ui.isTucked = false }
         slide(to: frame(tucked: false), duration: 0.3, timing: CAMediaTimingFunction(controlPoints: 0.2, 0.9, 0.3, 1))
     }
@@ -142,6 +149,8 @@ final class ShelfPanelController {
         peekUntil = .distantPast
         stopWatchingForLeave()
         stopRefreshing()
+        // The character lives in the pouch; nothing to animate while tucked.
+        director.stop()
         withAnimation(.pouchCharacter) { ui.isTucked = true }
         slide(to: frame(tucked: true), duration: 0.24, timing: CAMediaTimingFunction(name: .easeIn))
     }
@@ -222,16 +231,9 @@ final class ShelfPanelController {
         return geometry.frame(for: placement, in: screen.visibleFrame, tucked: tucked)
     }
 
-    /// Where the character's eyes are on screen: the tab's eye while tucked,
-    /// the point between the flap's eyes otherwise.
+    /// The point between the flap's eyes, in screen coordinates.
     private func faceCenterOnScreen() -> NSPoint {
         let frame = panel.frame
-        if ui.isTucked {
-            let x = placement.side == .right
-                ? frame.minX + ShelfPanel.margin + TuckedTab.size.width / 2
-                : frame.maxX - ShelfPanel.margin - TuckedTab.size.width / 2
-            return NSPoint(x: x, y: frame.maxY - ShelfPanel.margin - TuckedTab.size.height / 2)
-        }
         let pouchMinX = placement.side == .right
             ? frame.minX + ShelfPanel.margin
             : frame.maxX - ShelfPanel.margin - ShelfPanel.contentWidth
