@@ -9,6 +9,7 @@ struct ItemCardView: View {
     var isHovered = false
     var isSelected = false
     var isDragging = false
+    var isFlashing = false
 
     @Environment(\.theme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -40,6 +41,20 @@ struct ItemCardView: View {
         .overlay {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .strokeBorder(theme.accent, lineWidth: isSelected ? 2.5 : 0)
+        }
+        .overlay(alignment: .topLeading) {
+            if item.source == .screenshot && !isMissing {
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 7, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(3)
+                    .background(.black.opacity(0.35), in: Circle())
+                    .padding(8)
+                    .accessibilityHidden(true)
+            }
+        }
+        .overlay {
+            if isFlashing { SnapFlash() }
         }
         .rotationEffect(.degrees(isLifted || reduceMotion ? 0 : tilt))
         .scaleEffect(isHovered && !reduceMotion ? 1.05 : 1)

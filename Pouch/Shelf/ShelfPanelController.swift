@@ -17,6 +17,7 @@ final class ShelfPanelController {
     private let dropHandler: DropHandler
     private let interactions: ShelfInteractions
     private var refreshTimer: Timer?
+    private var peekTask: Task<Void, Never>?
 
     init(store: ShelfStore, settings: AppSettings, inbox: DropInbox?, sounds: SoundPlayer) {
         self.store = store
@@ -42,19 +43,48 @@ final class ShelfPanelController {
     /// Shows the shelf without making it key, so the frontmost app keeps
     /// keyboard focus. It becomes key once you click it.
     func show() {
-        store.refreshAvailability()
-        panel.orderFrontRegardless()
-        startRefreshing()
+        cancelPeek()
+        present()
     }
 
     func hide() {
+        cancelPeek()
         panel.orderOut(nil)
         refreshTimer?.invalidate()
         refreshTimer = nil
     }
 
     func toggle() {
-        isVisible ? hide() : show()
+        isVisible && peekTask == nil ? hide() : show()
+    }
+
+    /// Shows the shelf for a few seconds (when a screenshot arrives, say) and
+    /// tucks it away again, unless you're hovering, dragging or clicked it.
+    /// Does nothing if the shelf is already open for real.
+    func peek(for duration: Duration = .seconds(4)) {
+        guard !isVisible || peekTask != nil else { return }
+        present()
+        peekTask?.cancel()
+        peekTask = Task { [weak self] in
+            try? await Task.sleep(for: duration)
+            guard !Task.isCancelled, let self else { return }
+            self.peekTask = nil
+            let engaged = self.panel.frame.contains(NSEvent.mouseLocation)
+                || self.panel.isKeyWindow
+                || !self.ui.draggingIDs.isEmpty
+            if !engaged { self.hide() }
+        }
+    }
+
+    private func cancelPeek() {
+        peekTask?.cancel()
+        peekTask = nil
+    }
+
+    private func present() {
+        store.refreshAvailability()
+        panel.orderFrontRegardless()
+        startRefreshing()
     }
 
     private func startRefreshing() {

@@ -19,7 +19,8 @@ struct ShelfGrid: View {
                         isMissing: store.isMissing(item.id),
                         isHovered: ui.hoveredID == item.id,
                         isSelected: ui.selection.contains(item.id),
-                        isDragging: ui.draggingIDs.contains(item.id)
+                        isDragging: ui.draggingIDs.contains(item.id),
+                        isFlashing: ui.flashingIDs.contains(item.id)
                     )
                     // Clicks, hover and drag-out are handled in AppKit.
                     .overlay(ItemInteractionView(id: item.id, interactions: interactions))

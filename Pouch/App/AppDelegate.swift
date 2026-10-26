@@ -1,28 +1,55 @@
 import AppKit
 import PouchCore
+import SwiftUI
 import os
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let logger = Logger(subsystem: "com.danielkurz.Pouch", category: "App")
     private let settings = AppSettings()
+    private lazy var sounds = SoundPlayer(settings: settings)
     private var store = ShelfStore()
+    private let screenshotWatcher = ScreenshotWatcher()
     private var shelf: ShelfPanelController?
     private var statusItemController: StatusItemController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let inbox = makeStorage()
         store.load()
-        let sounds = SoundPlayer(settings: settings)
 
         let shelf = ShelfPanelController(store: store, settings: settings, inbox: inbox, sounds: sounds)
         self.shelf = shelf
         statusItemController = StatusItemController(shelf: shelf)
         shelf.show()
+
+        screenshotWatcher.onScreenshot = { [weak self] url in self?.collectScreenshot(at: url) }
+        updateScreenshotWatcher(enabled: settings.collectScreenshots)
+        observeChanges({ [settings] in settings.collectScreenshots }) { [weak self] enabled in
+            self?.updateScreenshotWatcher(enabled: enabled)
+        }
+
         #if DEBUG
         DebugSnapshot.scheduleIfRequested(for: shelf.panel)
         #endif
     }
+
+    // MARK: - Screenshots
+
+    private func updateScreenshotWatcher(enabled: Bool) {
+        enabled ? screenshotWatcher.start() : screenshotWatcher.stop()
+    }
+
+    private func collectScreenshot(at url: URL) {
+        guard let shelf else { return }
+        let added = withAnimation(.pouchLand) { store.addFiles([url], source: .screenshot) }
+        shelf.ui.flash(added.map(\.id))
+        shelf.ui.gulpCount += 1
+        sounds.play(.snap)
+        statusItemController?.celebrate()
+        if settings.showOnNewScreenshot { shelf.peek() }
+    }
+
+    // MARK: - Storage
 
     /// Sets up `~/Library/Application Support/Pouch`. If that fails the shelf
     /// still works, it just won't survive a relaunch.
