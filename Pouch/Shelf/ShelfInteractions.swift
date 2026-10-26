@@ -15,7 +15,7 @@ final class ShelfInteractions {
     /// Card views by item, held weakly, for Quick Look's zoom animation.
     private let cardViews = NSMapTable<NSUUID, NSView>.strongToWeakObjects()
 
-    /// Escape with nothing selected, or the collapse button; the panel
+    /// Escape with nothing selected, or the pull tab; the panel
     /// controller tucks the shelf into the menu bar.
     var onDismiss: (() -> Void)?
 

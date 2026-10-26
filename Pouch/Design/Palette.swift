@@ -21,7 +21,7 @@ enum Palette {
 
     static let eyeWhite = Color(light: 0xFBF7EF, dark: 0xF4EEE3)
     static let pupil = Color(light: 0x1E1915, dark: 0x1A1512)
-    /// The press-stud snap.
+    /// The grommet on the pull tab.
     static let metal = Color(light: 0xCFC7BA, dark: 0xA59C8E)
     static let metalRim = Color(light: 0x8F877B, dark: 0x6D655A)
 }

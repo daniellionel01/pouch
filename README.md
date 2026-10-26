@@ -19,7 +19,7 @@ _Demo GIF coming soon._
   - It naps when it's empty, and wakes up when you come close.
   - When you drag something over it, the flap lifts open. Drop it, and you can see it swallow.
   - New screenshots get a double take, and "Empty" shakes everything out.
-  - Click the snap on the flap to close it.
+  - Pull the tab on the flap to close it.
 - **Things look like what they are.** Screenshots and photos keep their real shape, text arrives as a paper slip, and links as a luggage tag.
 - **Four fabrics**: Tomato, Moss, Denim and Mustard, plus optional sound effects. Everything respects Reduce Motion.
 
@@ -52,7 +52,7 @@ The first time a screenshot is collected, macOS asks whether Pouch may access yo
 | Esc | Deselect, or hide the shelf |
 | ⌘-click / ⇧-click | Add to the selection / select a range |
 
-To put the shelf away, click the **snap** on the flap (or press ⌥⌘P, or Esc). It tucks itself into the menu bar icon and pops back out from there. Pouch remembers whether you left it open or tucked away.
+To put the shelf away, click the **pull tab** at the top of the flap (or press ⌥⌘P, or Esc). It tucks itself into the menu bar icon and pops back out from there. Pouch remembers whether you left it open or tucked away.
 
 The shelf handles keys once you've clicked it. Right-click an item for Open, Reveal in Finder, Quick Look, Copy and Remove.
 

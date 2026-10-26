@@ -35,7 +35,7 @@ struct ShelfView: View {
                     }
                     ShelfFooter(count: store.items.count, onEmpty: interactions.clearAll)
                 }
-                FlapView(character: character, isOpen: ui.isDropTargeted, onSnap: interactions.collapse)
+                FlapView(character: character, isOpen: ui.isDropTargeted, onClose: interactions.collapse)
             }
             .frame(width: ShelfPanel.contentWidth)
             .frame(maxHeight: .infinity)

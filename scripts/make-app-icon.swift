@@ -15,7 +15,6 @@ let thread = NSColor(srgbRed: 0.965, green: 0.863, blue: 0.761, alpha: 1)   // #
 let eyeWhite = NSColor(srgbRed: 0.984, green: 0.969, blue: 0.937, alpha: 1) // #FBF7EF
 let pupil = NSColor(srgbRed: 0.118, green: 0.098, blue: 0.082, alpha: 1)    // #1E1915
 let metal = NSColor(srgbRed: 0.812, green: 0.780, blue: 0.729, alpha: 1)    // #CFC7BA
-let metalRim = NSColor(srgbRed: 0.561, green: 0.529, blue: 0.482, alpha: 1) // #8F877B
 let sky = NSColor(srgbRed: 0.612, green: 0.765, blue: 0.902, alpha: 1)
 let hill = NSColor(srgbRed: 0.498, green: 0.639, blue: 0.357, alpha: 1)
 
@@ -95,25 +94,27 @@ func drawIcon() {
     // Eyes, glancing down at what's inside.
     for centerX in [432.0, 592.0] {
         eyeWhite.setFill()
-        NSBezierPath(ovalIn: NSRect(x: centerX - 54, y: 650, width: 108, height: 126)).fill()
-        let pupilCenter = NSPoint(x: centerX + 10, y: 692)
+        NSBezierPath(ovalIn: NSRect(x: centerX - 54, y: 630, width: 108, height: 126)).fill()
+        let pupilCenter = NSPoint(x: centerX + 10, y: 672)
         pupil.setFill()
         NSBezierPath(ovalIn: NSRect(x: pupilCenter.x - 31, y: pupilCenter.y - 31, width: 62, height: 62)).fill()
         eyeWhite.setFill()
         NSBezierPath(ovalIn: NSRect(x: pupilCenter.x - 18, y: pupilCenter.y + 6, width: 18, height: 18)).fill()
     }
 
-    // The snap.
+    // The pull tab, sewn into the top seam (inside the tile's clip).
+    NSGraphicsContext.saveGraphicsState()
+    tile.addClip()
+    let tab = NSBezierPath(roundedRect: NSRect(x: 712, y: 760, width: 52, height: 190), xRadius: 26, yRadius: 26)
     withShadow(0.3, blur: 6, y: -4) {
-        metalRim.setFill()
-        NSBezierPath(ovalIn: NSRect(x: 478, y: 496, width: 68, height: 68)).fill()
+        thread.setFill()
+        tab.fill()
     }
     metal.setFill()
-    NSBezierPath(ovalIn: NSRect(x: 486, y: 504, width: 52, height: 52)).fill()
-    let ring = NSBezierPath(ovalIn: NSRect(x: 500, y: 518, width: 24, height: 24))
-    ring.lineWidth = 5
-    metalRim.setStroke()
-    ring.stroke()
+    NSBezierPath(ovalIn: NSRect(x: 720, y: 772, width: 36, height: 36)).fill()
+    NSColor(srgbRed: 0.231, green: 0.184, blue: 0.153, alpha: 1).setFill()
+    NSBezierPath(ovalIn: NSRect(x: 729, y: 781, width: 18, height: 18)).fill()
+    NSGraphicsContext.restoreGraphicsState()
 }
 
 func png(pixels: Int) -> Data? {
