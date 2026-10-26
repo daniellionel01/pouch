@@ -1,0 +1,97 @@
+# Generate the Xcode project with `xcodegen generate`. The .xcodeproj is gitignored.
+name: Pouch
+
+options:
+  bundleIdPrefix: com.danielkurz
+  deploymentTarget:
+    macOS: "14.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # Ad-hoc signing ("Sign to Run Locally"): builds run without an Apple
+    # Developer account. Release builds are unsigned/unnotarized for now.
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+    ENABLE_HARDENED_RUNTIME: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    DEAD_CODE_STRIPPING: YES
+
+packages:
+  KeyboardShortcuts:
+    url: https://github.com/sindresorhus/KeyboardShortcuts
+    exactVersion: 2.4.0
+
+targets:
+  Pouch:
+    type: application
+    platform: macOS
+    sources:
+      - path: Pouch
+    dependencies:
+      - target: PouchCore
+      - package: KeyboardShortcuts
+    info:
+      path: Pouch/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Pouch
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSApplicationCategoryType: public.app-category.productivity
+        # Menu-bar-only "agent" app: no Dock icon, no main menu bar.
+        LSUIElement: true
+        NSHumanReadableCopyright: "© 2026 Daniel Kurz. MIT License."
+        NSDesktopFolderUsageDescription: "Pouch watches your screenshot folder so new screenshots appear on the shelf."
+        NSDocumentsFolderUsageDescription: "Pouch shows thumbnails of files you put on the shelf."
+        NSDownloadsFolderUsageDescription: "Pouch shows thumbnails of files you put on the shelf."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.danielkurz.Pouch
+        PRODUCT_NAME: Pouch
+        ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+
+  # Everything that doesn't need AppKit windows lives here so it can be unit
+  # tested without launching the app. It's a static library, so it's linked
+  # straight into Pouch's binary; that avoids hardened-runtime library
+  # validation issues with an ad-hoc signed embedded framework.
+  PouchCore:
+    type: library.static
+    platform: macOS
+    sources:
+      - path: PouchCore
+    settings:
+      base:
+        PRODUCT_NAME: PouchCore
+
+  PouchCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: PouchCoreTests
+    dependencies:
+      - target: PouchCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.danielkurz.PouchCoreTests
+
+schemes:
+  Pouch:
+    build:
+      targets:
+        Pouch: all
+        PouchCoreTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - PouchCoreTests
+    archive:
+      config: Release
