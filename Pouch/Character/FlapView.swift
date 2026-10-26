@@ -6,13 +6,8 @@ import SwiftUI
 struct FlapView: View {
     static let height: CGFloat = 66
 
-    /// How far the face slides toward the visible edge while tucked: far
-    /// enough that one eye sits in the strip left on screen.
-    static let peekDistance: CGFloat = 80
-
     var character: Character
     var isOpen: Bool
-    var peekOffset: CGFloat = 0
 
     @Environment(\.theme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -40,7 +35,7 @@ struct FlapView: View {
                     .stroke(theme.thread.opacity(0.9), style: .stitch(width: 1.4))
                 // The face rides up a little as the flap lifts.
                 FaceView(character: character, lidColor: theme.flap)
-                    .offset(x: peekOffset, y: 14 - (lift + sigh) * 4)
+                    .offset(y: 14 - (lift + sigh) * 4)
             }
         } keyframes: { _ in
             // A sleepy sigh: the flap rises a hair and settles back.
@@ -51,7 +46,6 @@ struct FlapView: View {
         }
         .frame(height: Self.height)
         .animation(.pouchCharacter, value: isOpen)
-        .animation(.pouchCharacter, value: peekOffset)
         // Clicks on the leather go through to the window-drag background:
         // the flap is the natural handle.
         .allowsHitTesting(false)

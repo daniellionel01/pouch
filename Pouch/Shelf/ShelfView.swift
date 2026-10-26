@@ -13,10 +13,27 @@ struct ShelfView: View {
 
     var body: some View {
         let theme = Theme.named(settings.theme)
-        // Captured as a constant: the keyframe closures below are Sendable
+        // Passed as a constant: the keyframe closures in pouch() are Sendable
         // and can't read main-actor view state directly.
         let reduceMotion = reduceMotion
 
+        ZStack(alignment: ui.dockSide == .right ? .topLeading : .topTrailing) {
+            pouch(reduceMotion: reduceMotion)
+                .opacity(ui.isTucked ? 0 : 1)
+                .allowsHitTesting(!ui.isTucked)
+            TuckedTab(character: character, side: ui.dockSide, isHovered: ui.isTabHovered)
+                // Click the tab to open; drag it to move the shelf.
+                .background(WindowDragArea(onClick: interactions.revealShelf))
+                .padding(ShelfPanel.margin)
+                .opacity(ui.isTucked ? 1 : 0)
+                .allowsHitTesting(ui.isTucked)
+        }
+        .animation(.easeOut(duration: 0.16), value: ui.isTucked)
+        .environment(\.theme, theme)
+        .tint(theme.controlTint)
+    }
+
+    private func pouch(reduceMotion: Bool) -> some View {
         KeyframeAnimator(initialValue: Swallow(), trigger: ui.gulpCount + ui.snapCount) { swallow in
             let silhouette = BodyShape(
                 bulgePosition: swallow.position,
@@ -36,7 +53,7 @@ struct ShelfView: View {
                             .transition(.opacity)
                     }
                 }
-                FlapView(character: character, isOpen: ui.isDropTargeted, peekOffset: peekOffset)
+                FlapView(character: character, isOpen: ui.isDropTargeted)
             }
             .frame(width: ShelfPanel.contentWidth)
             .frame(maxHeight: .infinity)
@@ -75,14 +92,6 @@ struct ShelfView: View {
             }
         }
         .padding(ShelfPanel.margin)
-        .environment(\.theme, theme)
-        .tint(theme.controlTint)
     }
 
-    /// While tucked, the face slides over to the strip that's still on
-    /// screen, so one eye peeks out from behind the screen edge.
-    private var peekOffset: CGFloat {
-        guard ui.isTucked else { return 0 }
-        return ui.dockSide == .right ? -FlapView.peekDistance : FlapView.peekDistance
-    }
 }

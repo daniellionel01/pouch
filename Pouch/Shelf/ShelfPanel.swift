@@ -15,9 +15,10 @@ final class ShelfPanel: NSPanel {
     /// fall through to whatever is underneath.
     static let margin: CGFloat = 6
     static let width = contentWidth + margin * 2
-    /// Window width while tucked against a screen edge: a strip of the pouch
-    /// (plus the margin) stays visible to hover or drop onto.
+    /// Window size while tucked against a screen edge: just the leather tab
+    /// (plus the margin), to hover, click or drop onto.
     static let tuckedWidth: CGFloat = 32
+    static let tuckedHeight: CGFloat = 76
 
     init() {
         super.init(
@@ -41,7 +42,7 @@ final class ShelfPanel: NSPanel {
         backgroundColor = .clear
         hasShadow = true
         animationBehavior = .utilityWindow
-        minSize = NSSize(width: Self.tuckedWidth, height: 240)
+        minSize = NSSize(width: Self.tuckedWidth, height: Self.tuckedHeight)
         maxSize = NSSize(width: Self.width, height: 1200)
     }
 

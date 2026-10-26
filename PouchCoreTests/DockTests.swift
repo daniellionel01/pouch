@@ -2,7 +2,7 @@ import XCTest
 @testable import PouchCore
 
 final class DockGeometryTests: XCTestCase {
-    private let geometry = DockGeometry(fullWidth: 232, tuckedWidth: 30, minHeight: 240)
+    private let geometry = DockGeometry(fullWidth: 232, tuckedWidth: 32, tuckedHeight: 76, minHeight: 240)
     /// A 1440×875 usable area starting at the origin, like a laptop screen
     /// under the menu bar.
     private let visible = CGRect(x: 0, y: 0, width: 1440, height: 875)
@@ -14,8 +14,8 @@ final class DockGeometryTests: XCTestCase {
 
         XCTAssertEqual(revealed, CGRect(x: 1440 - 232, y: 875 - 60 - 380, width: 232, height: 380))
         XCTAssertEqual(tucked.maxX, visible.maxX, "flush with the right edge")
-        XCTAssertEqual(tucked.width, 30)
-        XCTAssertEqual(tucked.minY, revealed.minY)
+        XCTAssertEqual(tucked.size, CGSize(width: 32, height: 76))
+        XCTAssertEqual(tucked.maxY, revealed.maxY, "the tab shares the shelf's top")
     }
 
     func testLeftDockStaysOnTheLeftEdge() {
@@ -30,6 +30,8 @@ final class DockGeometryTests: XCTestCase {
         let tiny = DockPlacement(side: .right, topOffset: 0, height: 10)
 
         XCTAssertEqual(geometry.frame(for: tooLow, in: visible, tucked: false).minY, visible.minY)
+        // Tucked, the tab still sits where the (clamped) shelf's top would be.
+        XCTAssertEqual(geometry.frame(for: tooLow, in: visible, tucked: true).maxY, visible.minY + 380)
         XCTAssertEqual(geometry.frame(for: tooTall, in: visible, tucked: false).height, visible.height)
         XCTAssertEqual(geometry.frame(for: tiny, in: visible, tucked: false).height, 240)
     }
@@ -54,6 +56,7 @@ final class DockGeometryTests: XCTestCase {
         XCTAssertEqual(placement.side, .right)
         XCTAssertEqual(frame.maxX, secondary.maxX)
         XCTAssertEqual(frame.maxY, dropped.maxY)
+        XCTAssertEqual(frame.height, 76)
     }
 }
 

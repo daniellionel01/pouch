@@ -9,13 +9,13 @@ _Demo GIF coming soon._
 
 ## What it does
 
-- **Tucked against the screen edge**: the shelf sits against the right (or left) edge, with a strip showing. Hover it, drag a file onto it, or take a screenshot and it slides out, then tucks away again when you move on. It's on every Space and over full-screen apps, and never steals focus.
+- **Tucked against the screen edge**: the shelf sits against the right (or left) edge as a small leather tab with one eye. Hover it, drag a file onto it, or take a screenshot and it slides out, then tucks away again when you move on. It's on every Space and over full-screen apps, and never steals focus.
 - **Drag in**: files, folders, images, links and text. Files are kept by reference (bookmarks), so moving or renaming them doesn't break anything. Nothing is copied.
 - **Drag out**: one item or a whole selection, as real files, into any app.
 - **Auto-collects screenshots** taken with ⌘⇧3, ⌘⇧4 or ⌘⇧5, wherever you save them.
 - **Quick Look, Reveal in Finder, Copy, Open**, plus a clear-all button.
 - **It's a little creature.** The shelf is a canvas pouch with a stitched leather flap, and the flap has eyes.
-  - Its eyes follow your cursor, blink, and wander off when you stop moving. Tucked away, one eye peeks out from behind the screen edge.
+  - Its eyes follow your cursor, blink, and wander off when you stop moving. Tucked away, the tab's single eye keeps watching.
   - It naps when it's empty, and wakes up when you come close.
   - When you drag something over it, the flap lifts open. Drop it, and you can see it swallow.
   - New screenshots get a double take, and "Clear all" shakes everything out.
@@ -51,7 +51,7 @@ The first time a screenshot is collected, macOS asks whether Pouch may access yo
 | Esc | Deselect, or tuck the shelf away |
 | ⌘-click / ⇧-click | Add to the selection / select a range |
 
-Hover the strip at the screen edge to slide the shelf out; it tucks itself away when the cursor leaves. Clicking the menu bar icon (or ⌥⌘P) brings it out and keeps it out until you've used it; Esc tucks it away. Right-click the menu bar icon for the menu. Drag the shelf by its leather flap or background to move it along the edge, or over to the other side of the screen.
+Hover (or click) the tab at the screen edge to slide the shelf out; it tucks itself away when the cursor leaves. Clicking the menu bar icon (or ⌥⌘P) brings it out and keeps it out until you've used it; Esc tucks it away. Right-click the menu bar icon for the menu. Drag the shelf by its leather flap or background to move it along the edge, or over to the other side of the screen.
 
 The shelf handles keys once you've clicked it. Right-click an item for Open, Reveal in Finder, Quick Look, Copy and Remove.
 
@@ -112,7 +112,7 @@ Debug builds read a few environment variables:
 
 - `POUCH_DATA_DIR=/some/folder` stores the shelf there instead of `~/Library/Application Support/Pouch`.
 - `POUCH_SNAPSHOT=/tmp/shelf.png` renders the shelf to a PNG after launch (`POUCH_SNAPSHOT_DELAY` sets the delay in seconds, `POUCH_SNAPSHOT_WINDOW=settings` captures Settings instead).
-- `POUCH_APPEARANCE=dark|light` forces an appearance, `POUCH_DEBUG_HOVER=1` shows the drop-hover state, `POUCH_DEBUG_TUCKED=1` captures the tucked strip, and `POUCH_DEBUG_REACT=gulp|snap|shake` fires a reaction after one second (handy with a snapshot delay of about 1.2 s).
+- `POUCH_APPEARANCE=dark|light` forces an appearance, `POUCH_DEBUG_HOVER=1` shows the drop-hover state, `POUCH_DEBUG_TUCKED=1` captures the tucked tab (add `POUCH_SNAPSHOT_FULL=1` to render the whole unclipped view), and `POUCH_DEBUG_REACT=gulp|snap|shake` fires a reaction after one second (handy with a snapshot delay of about 1.2 s).
 - Any setting can be overridden for one run with a launch argument, e.g. `Pouch.app/Contents/MacOS/Pouch -theme navy`.
 
 ## Where things are stored

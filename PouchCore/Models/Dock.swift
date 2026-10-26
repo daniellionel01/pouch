@@ -43,30 +43,33 @@ public struct DockPlacement: Codable, Equatable, Sendable {
 
 /// Frame math for the docked shelf. Pure geometry, so it's unit tested.
 ///
-/// When tucked, the window shrinks to a thin strip at the edge instead of
-/// sliding off-screen: off-screen parts would show up on a neighbouring
-/// display, and an invisible full-size window would swallow drops meant for
-/// whatever is underneath.
+/// When tucked, the window shrinks to a small tab at the edge, aligned with
+/// the shelf's top, instead of sliding off-screen: off-screen parts would
+/// show up on a neighbouring display, and an invisible full-size window
+/// would swallow drops meant for whatever is underneath.
 public struct DockGeometry: Equatable, Sendable {
     /// Window width when the shelf is out.
     public var fullWidth: CGFloat
-    /// Window width when it's tucked: just the strip that stays visible.
+    /// Window size when it's tucked: just the tab.
     public var tuckedWidth: CGFloat
+    public var tuckedHeight: CGFloat
     public var minHeight: CGFloat
 
-    public init(fullWidth: CGFloat, tuckedWidth: CGFloat, minHeight: CGFloat) {
+    public init(fullWidth: CGFloat, tuckedWidth: CGFloat, tuckedHeight: CGFloat, minHeight: CGFloat) {
         self.fullWidth = fullWidth
         self.tuckedWidth = tuckedWidth
+        self.tuckedHeight = tuckedHeight
         self.minHeight = minHeight
     }
 
     /// The window frame for a placement on a screen's usable area.
     public func frame(for placement: DockPlacement, in visible: CGRect, tucked: Bool) -> CGRect {
-        let height = min(max(placement.height, minHeight), visible.height)
+        let fullHeight = min(max(placement.height, minHeight), visible.height)
         let width = tucked ? tuckedWidth : fullWidth
+        let height = tucked ? tuckedHeight : fullHeight
         let x = placement.side == .right ? visible.maxX - width : visible.minX
-        // Keep the whole shelf on screen vertically.
-        let top = min(max(visible.maxY - placement.topOffset, visible.minY + height), visible.maxY)
+        // Keep the whole shelf on screen vertically; the tab shares its top.
+        let top = min(max(visible.maxY - placement.topOffset, visible.minY + fullHeight), visible.maxY)
         return CGRect(x: x, y: top - height, width: width, height: height)
     }
 

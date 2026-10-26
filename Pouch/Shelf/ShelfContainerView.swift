@@ -5,10 +5,11 @@ import SwiftUI
 /// The panel's content view: hosts the SwiftUI shelf and is the drop target
 /// for the whole window, so you can drop anywhere on the pouch.
 ///
-/// The window shrinks to a thin strip when the shelf is tucked against a
+/// The window shrinks to a small tab when the shelf is tucked against a
 /// screen edge, but the shelf itself keeps its full size: this view pins it
-/// to the edge facing the screen, and the window simply clips it. That way
-/// SwiftUI never re-lays out the shelf while it slides in and out.
+/// to the top and to the edge facing the screen, and the window simply clips
+/// it. That way SwiftUI never re-lays out the shelf while it slides in and
+/// out; it just unrolls from the tab.
 final class ShelfContainerView: NSView {
     private let content: NSView
     private let contentWidth: CGFloat
@@ -22,6 +23,11 @@ final class ShelfContainerView: NSView {
     var onDragEntered: (() -> Void)?
 
     var dockSide: DockSide = .right {
+        didSet { needsLayout = true }
+    }
+    /// The shelf's full height. While the window is smaller (tucked or
+    /// sliding), the shelf keeps this height instead of being squashed.
+    var contentHeight: CGFloat = 0 {
         didSet { needsLayout = true }
     }
 
@@ -45,7 +51,8 @@ final class ShelfContainerView: NSView {
         // Docked on the right, the screen-facing edge is the shelf's left
         // side, and vice versa.
         let x = dockSide == .right ? 0 : bounds.width - contentWidth
-        content.frame = NSRect(x: x, y: 0, width: contentWidth, height: bounds.height)
+        let height = max(bounds.height, contentHeight)
+        content.frame = NSRect(x: x, y: bounds.height - height, width: contentWidth, height: height)
     }
 
     // MARK: - Hover

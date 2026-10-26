@@ -17,6 +17,12 @@ final class ShelfInteractions {
 
     /// Escape with nothing selected; the panel controller puts the shelf away.
     var onDismiss: (() -> Void)?
+    /// A click on the tucked tab.
+    var onReveal: (() -> Void)?
+
+    func revealShelf() {
+        onReveal?()
+    }
     /// Knows when a context menu is open, so the shelf doesn't tuck away
     /// underneath it.
     let menuTracker = MenuTracker()

@@ -9,6 +9,8 @@ import SwiftUI
 final class ShelfUIState {
     /// True while the shelf is tucked against the screen edge.
     var isTucked = true
+    /// The cursor is resting on the tucked tab.
+    var isTabHovered = false
     var dockSide: DockSide = .right
     var isDropTargeted = false
     var hoveredID: UUID?

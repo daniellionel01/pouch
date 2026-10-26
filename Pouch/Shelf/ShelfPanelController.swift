@@ -28,7 +28,9 @@ final class ShelfPanelController {
     private let interactions: ShelfInteractions
     private let director: CharacterDirector
     private let container: ShelfContainerView
-    private let geometry = DockGeometry(fullWidth: ShelfPanel.width, tuckedWidth: ShelfPanel.tuckedWidth, minHeight: 240)
+    private let geometry = DockGeometry(
+        fullWidth: ShelfPanel.width, tuckedWidth: ShelfPanel.tuckedWidth, tuckedHeight: ShelfPanel.tuckedHeight, minHeight: 240
+    )
     private var placement = DockPlacement.load()
 
     private enum Presence: Equatable {
@@ -76,6 +78,7 @@ final class ShelfPanelController {
 
         panel.quickLook = interactions.quickLook
         interactions.onDismiss = { [weak self] in self?.closeFromShelf() }
+        interactions.onReveal = { [weak self] in self?.reveal(pinned: true) }
         installKeyMonitor()
         observeUserMoves()
 
@@ -87,8 +90,7 @@ final class ShelfPanelController {
 
     /// Puts the shelf on screen, tucked at its edge. Call once at launch.
     func dock() {
-        ui.dockSide = placement.side
-        container.dockSide = placement.side
+        applyPlacement()
         setFrame(frame(tucked: true))
         panel.orderFrontRegardless()
         director.start()
@@ -120,6 +122,7 @@ final class ShelfPanelController {
 
     private func reveal(pinned: Bool) {
         hoverTask?.cancel()
+        ui.isTabHovered = false
         if case .revealed(let wasPinned) = presence {
             presence = .revealed(pinned: wasPinned || pinned)
             return
@@ -158,11 +161,17 @@ final class ShelfPanelController {
     private func hoverStarted() {
         guard !isRevealed else { return }
         hoverTask?.cancel()
+        // The tab leans out first (anticipation), then the shelf follows.
+        ui.isTabHovered = true
         hoverTask = Task { [weak self] in
             try? await Task.sleep(for: Self.hoverIntent)
             guard !Task.isCancelled, let self else { return }
             // Still there? Then it's on purpose.
-            if self.panel.frame.contains(NSEvent.mouseLocation) { self.reveal(pinned: false) }
+            if self.panel.frame.insetBy(dx: -4, dy: -4).contains(NSEvent.mouseLocation) {
+                self.reveal(pinned: false)
+            } else {
+                self.ui.isTabHovered = false
+            }
         }
     }
 
@@ -213,15 +222,27 @@ final class ShelfPanelController {
         return geometry.frame(for: placement, in: screen.visibleFrame, tucked: tucked)
     }
 
-    /// The point between the eyes, in screen coordinates, wherever the face
-    /// currently is (it slides toward the edge while tucked).
+    /// Where the character's eyes are on screen: the tab's eye while tucked,
+    /// the point between the flap's eyes otherwise.
     private func faceCenterOnScreen() -> NSPoint {
         let frame = panel.frame
+        if ui.isTucked {
+            let x = placement.side == .right
+                ? frame.minX + ShelfPanel.margin + TuckedTab.size.width / 2
+                : frame.maxX - ShelfPanel.margin - TuckedTab.size.width / 2
+            return NSPoint(x: x, y: frame.maxY - ShelfPanel.margin - TuckedTab.size.height / 2)
+        }
         let pouchMinX = placement.side == .right
             ? frame.minX + ShelfPanel.margin
             : frame.maxX - ShelfPanel.margin - ShelfPanel.contentWidth
-        let peek = ui.isTucked ? (placement.side == .right ? -FlapView.peekDistance : FlapView.peekDistance) : 0
-        return NSPoint(x: pouchMinX + ShelfPanel.contentWidth / 2 + peek, y: frame.maxY - ShelfPanel.margin - 27)
+        return NSPoint(x: pouchMinX + ShelfPanel.contentWidth / 2, y: frame.maxY - ShelfPanel.margin - 27)
+    }
+
+    /// Pushes the placement to everything that depends on it.
+    private func applyPlacement() {
+        ui.dockSide = placement.side
+        container.dockSide = placement.side
+        container.contentHeight = frame(tucked: false).height
     }
 
     private func setFrame(_ frame: NSRect) {
@@ -260,6 +281,7 @@ final class ShelfPanelController {
         NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated {
                 guard let self else { return }
+                self.applyPlacement()
                 self.setFrame(self.frame(tucked: !self.isRevealed))
             }
         }
@@ -284,8 +306,7 @@ final class ShelfPanelController {
         guard let screen = NSScreen.screens.first(where: { $0.frame.contains(center) }) ?? self.screen else { return }
         placement = geometry.placement(afterMovingTo: frame, in: screen.visibleFrame, screenID: screen.displayID)
         placement.save()
-        withAnimation(.pouchCharacter) { ui.dockSide = placement.side }
-        container.dockSide = placement.side
+        applyPlacement()
         if !isRevealed {
             presence = .revealed(pinned: false)
             startWatchingForLeave()
