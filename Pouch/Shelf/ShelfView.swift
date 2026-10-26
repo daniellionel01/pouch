@@ -6,6 +6,7 @@ struct ShelfView: View {
     var store: ShelfStore
     var settings: AppSettings
     var ui: ShelfUIState
+    var interactions: ShelfInteractions
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -21,7 +22,7 @@ struct ShelfView: View {
                 EmptyStateView(isAwake: ui.isDropTargeted)
                     .transition(.opacity)
             } else {
-                ShelfGrid(store: store, ui: ui)
+                ShelfGrid(store: store, ui: ui, interactions: interactions)
                     .transition(.opacity)
             }
         }
@@ -30,7 +31,7 @@ struct ShelfView: View {
         .background {
             ZStack {
                 PouchBackground()
-                WindowDragArea()
+                WindowDragArea(onClick: interactions.clearSelection)
             }
         }
         .overlay {

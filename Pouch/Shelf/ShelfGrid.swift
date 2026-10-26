@@ -5,6 +5,7 @@ import SwiftUI
 struct ShelfGrid: View {
     var store: ShelfStore
     var ui: ShelfUIState
+    var interactions: ShelfInteractions
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 10, alignment: .top), count: 2)
 
@@ -16,15 +17,12 @@ struct ShelfGrid: View {
                         item: item,
                         fileURL: store.fileURL(for: item.id),
                         isMissing: store.isMissing(item.id),
-                        isHovered: ui.hoveredID == item.id
+                        isHovered: ui.hoveredID == item.id,
+                        isSelected: ui.selection.contains(item.id),
+                        isDragging: ui.draggingIDs.contains(item.id)
                     )
-                    .onHover { inside in
-                        if inside {
-                            ui.hoveredID = item.id
-                        } else if ui.hoveredID == item.id {
-                            ui.hoveredID = nil
-                        }
-                    }
+                    // Clicks, hover and drag-out are handled in AppKit.
+                    .overlay(ItemInteractionView(id: item.id, interactions: interactions))
                     .transition(.pouchDropIn)
                 }
             }
@@ -33,5 +31,7 @@ struct ShelfGrid: View {
             .frame(maxWidth: .infinity, alignment: .top)
         }
         .scrollIndicators(.never)
+        // Clicking between cards deselects (and drags the window).
+        .background(WindowDragArea(onClick: interactions.clearSelection))
     }
 }

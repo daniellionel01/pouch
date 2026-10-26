@@ -7,11 +7,14 @@ struct ItemCardView: View {
     let fileURL: URL?
     let isMissing: Bool
     var isHovered = false
+    var isSelected = false
+    var isDragging = false
 
     @Environment(\.theme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     static let previewHeight: CGFloat = 64
+    static let thumbnailSize = CGSize(width: 90, height: previewHeight)
 
     var body: some View {
         VStack(spacing: 4) {
@@ -32,13 +35,22 @@ struct ItemCardView: View {
         .background {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(Color(nsColor: .controlBackgroundColor).opacity(isMissing ? 0.4 : 0.95))
-                .shadow(color: .black.opacity(isHovered ? 0.22 : 0.12), radius: isHovered ? 6 : 2, y: isHovered ? 3 : 1)
+                .shadow(color: .black.opacity(isLifted ? 0.22 : 0.12), radius: isLifted ? 6 : 2, y: isLifted ? 3 : 1)
         }
-        .rotationEffect(.degrees(isHovered || reduceMotion ? 0 : tilt))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(theme.accent, lineWidth: isSelected ? 2.5 : 0)
+        }
+        .rotationEffect(.degrees(isLifted || reduceMotion ? 0 : tilt))
         .scaleEffect(isHovered && !reduceMotion ? 1.05 : 1)
+        // While dragged out, the card stays behind as a faint outline.
+        .opacity(isDragging ? 0.35 : 1)
         .animation(.pouchHover, value: isHovered)
+        .animation(.pouchHover, value: isSelected)
+        .animation(.pouchHover, value: isDragging)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     @ViewBuilder
@@ -56,6 +68,9 @@ struct ItemCardView: View {
             NotePreview(text: text)
         }
     }
+
+    /// Hovered and selected cards straighten up and lift off the shelf.
+    private var isLifted: Bool { isHovered || isSelected }
 
     /// The note preview already shows the text, so don't repeat it.
     private var caption: String {
@@ -83,7 +98,7 @@ private struct FileThumbnail: View {
     @State private var thumbnail: ThumbnailLoader.Thumbnail?
     @Environment(\.displayScale) private var displayScale
 
-    private static let size = CGSize(width: 90, height: ItemCardView.previewHeight)
+    private static let size = ItemCardView.thumbnailSize
 
     var body: some View {
         let shown = thumbnail ?? ThumbnailLoader.shared.cachedThumbnail(for: url, size: Self.size) ?? ThumbnailLoader.shared.icon(for: url)

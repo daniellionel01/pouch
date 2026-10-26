@@ -15,13 +15,15 @@ final class ShelfPanelController {
     let ui = ShelfUIState()
     private let store: ShelfStore
     private let dropHandler: DropHandler
+    private let interactions: ShelfInteractions
     private var refreshTimer: Timer?
 
     init(store: ShelfStore, settings: AppSettings, inbox: DropInbox?, sounds: SoundPlayer) {
         self.store = store
         dropHandler = DropHandler(store: store, inbox: inbox)
+        interactions = ShelfInteractions(store: store, ui: ui, settings: settings, sounds: sounds)
 
-        let hostingView = NSHostingView(rootView: ShelfView(store: store, settings: settings, ui: ui))
+        let hostingView = NSHostingView(rootView: ShelfView(store: store, settings: settings, ui: ui, interactions: interactions))
         // Don't let SwiftUI resize the window; the panel's frame is ours.
         hostingView.sizingOptions = []
         panel.contentView = ShelfContainerView(content: hostingView, dropHandler: dropHandler) { [ui] targeted in
