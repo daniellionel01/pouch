@@ -182,7 +182,10 @@ final class ShelfPanelController {
         NSAnimationContext.runAnimationGroup { context in
             context.duration = duration
             context.timingFunction = CAMediaTimingFunction(name: timing)
-            panel.animator().setFrameOrigin(origin)
+            // The window animator only animates `setFrame`; `setFrameOrigin`
+            // silently does nothing, so the panel would sit still and then
+            // snap into place when the animation ends.
+            panel.animator().setFrame(NSRect(origin: origin, size: panel.frame.size), display: true)
             panel.animator().alphaValue = alpha
         } completionHandler: { [weak self] in
             MainActor.assumeIsolated {
