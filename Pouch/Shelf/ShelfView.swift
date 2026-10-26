@@ -32,10 +32,11 @@ struct ShelfView: View {
                     } else {
                         ShelfMasonry(store: store, ui: ui, interactions: interactions)
                             .transition(.opacity)
+                        ShelfFooter(count: store.items.count, onClear: interactions.clearAll)
+                            .transition(.opacity)
                     }
-                    ShelfFooter(count: store.items.count, onEmpty: interactions.clearAll)
                 }
-                FlapView(character: character, isOpen: ui.isDropTargeted, onClose: interactions.collapse)
+                FlapView(character: character, isOpen: ui.isDropTargeted)
             }
             .frame(width: ShelfPanel.contentWidth)
             .frame(maxHeight: .infinity)

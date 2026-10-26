@@ -14,14 +14,13 @@ _Demo GIF coming soon._
 - **Drag out**: one item or a whole selection, as real files, into any app.
 - **Auto-collects screenshots** taken with ⌘⇧3, ⌘⇧4 or ⌘⇧5, wherever you save them.
 - **Quick Look, Reveal in Finder, Copy, Open**, plus a clear-all button.
-- **It's a little creature.** The shelf is a canvas pouch with a stitched flap, and the flap has eyes.
+- **It's a little creature.** The shelf is a canvas pouch with a stitched leather flap, and the flap has eyes.
   - Its eyes follow your cursor, blink, and wander off when you stop moving.
   - It naps when it's empty, and wakes up when you come close.
   - When you drag something over it, the flap lifts open. Drop it, and you can see it swallow.
-  - New screenshots get a double take, and "Empty" shakes everything out.
-  - Pull the tab on the flap to close it.
+  - New screenshots get a double take, and "Clear all" shakes everything out.
 - **Things look like what they are.** Screenshots and photos keep their real shape, text arrives as a paper slip, and links as a luggage tag.
-- **Four fabrics**: Tomato, Moss, Denim and Mustard, plus optional sound effects. Everything respects Reduce Motion.
+- **Four leathers** for the flap: Cognac, Oxblood, Olive and Navy, plus optional sound effects. Everything respects Reduce Motion.
 
 No accounts, no cloud, no analytics.
 
@@ -35,7 +34,7 @@ No accounts, no cloud, no analytics.
      ```sh
      xattr -dr com.apple.quarantine /Applications/Pouch.app
      ```
-3. Pouch lives in the menu bar (the tray icon). There's no Dock icon.
+3. Pouch lives in the menu bar (the tray icon). Click the icon to show or hide the shelf, and right-click it for the menu. There's no Dock icon.
 
 The first time a screenshot is collected, macOS asks whether Pouch may access your Desktop (or wherever your screenshots go). Allow it so Pouch can see new screenshots and show thumbnails.
 
@@ -52,7 +51,7 @@ The first time a screenshot is collected, macOS asks whether Pouch may access yo
 | Esc | Deselect, or hide the shelf |
 | ⌘-click / ⇧-click | Add to the selection / select a range |
 
-To put the shelf away, click the **pull tab** at the top of the flap (or press ⌥⌘P, or Esc). It shuts its eyes and tucks itself away; bring it back from the menu bar icon or ⌥⌘P. Pouch remembers whether you left it open or tucked away.
+Click the menu bar icon (or press ⌥⌘P) to show or hide the shelf. Esc hides it too. Pouch remembers whether you left it open.
 
 The shelf handles keys once you've clicked it. Right-click an item for Open, Reveal in Finder, Quick Look, Copy and Remove.
 
@@ -114,7 +113,7 @@ Debug builds read a few environment variables:
 - `POUCH_DATA_DIR=/some/folder` stores the shelf there instead of `~/Library/Application Support/Pouch`.
 - `POUCH_SNAPSHOT=/tmp/shelf.png` renders the shelf to a PNG after launch (`POUCH_SNAPSHOT_DELAY` sets the delay in seconds, `POUCH_SNAPSHOT_WINDOW=settings` captures Settings instead).
 - `POUCH_APPEARANCE=dark|light` forces an appearance, `POUCH_DEBUG_HOVER=1` shows the drop-hover state, and `POUCH_DEBUG_REACT=gulp|snap|shake` fires a reaction after one second (handy with a snapshot delay of about 1.2 s).
-- Any setting can be overridden for one run with a launch argument, e.g. `Pouch.app/Contents/MacOS/Pouch -theme denim`.
+- Any setting can be overridden for one run with a launch argument, e.g. `Pouch.app/Contents/MacOS/Pouch -theme navy`.
 
 ## Where things are stored
 

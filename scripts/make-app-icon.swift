@@ -10,11 +10,10 @@ import AppKit
 
 // Flat colors only, matching the app (see Pouch/Design/Palette.swift and Theme.swift).
 let canvas = NSColor(srgbRed: 0.945, green: 0.918, blue: 0.867, alpha: 1)   // #F1EADD
-let tomato = NSColor(srgbRed: 0.816, green: 0.290, blue: 0.153, alpha: 1)   // #D04A27
-let thread = NSColor(srgbRed: 0.965, green: 0.863, blue: 0.761, alpha: 1)   // #F6DCC2
+let leather = NSColor(srgbRed: 0.682, green: 0.369, blue: 0.173, alpha: 1)  // #AE5E2C (Cognac)
+let thread = NSColor(srgbRed: 0.945, green: 0.875, blue: 0.753, alpha: 1)   // #F1DFC0
 let eyeWhite = NSColor(srgbRed: 0.984, green: 0.969, blue: 0.937, alpha: 1) // #FBF7EF
 let pupil = NSColor(srgbRed: 0.118, green: 0.098, blue: 0.082, alpha: 1)    // #1E1915
-let metal = NSColor(srgbRed: 0.812, green: 0.780, blue: 0.729, alpha: 1)    // #CFC7BA
 let sky = NSColor(srgbRed: 0.612, green: 0.765, blue: 0.902, alpha: 1)
 let hill = NSColor(srgbRed: 0.498, green: 0.639, blue: 0.357, alpha: 1)
 
@@ -80,10 +79,18 @@ func drawIcon() {
 
     // The flap, with its shadow on the body and its stitching.
     withShadow(0.25, blur: 14, y: -8) {
-        tomato.setFill()
+        leather.setFill()
         flapPath(inset: 0).fill()
     }
-    let stitch = flapPath(inset: 40)
+    // Burnished edge.
+    NSGraphicsContext.saveGraphicsState()
+    flapPath(inset: 0).addClip()
+    let edge = flapPath(inset: 0)
+    edge.lineWidth = 14
+    NSColor.black.withAlphaComponent(0.3).setStroke()
+    edge.stroke()
+    NSGraphicsContext.restoreGraphicsState()
+    let stitch = flapPath(inset: 46)
     stitch.lineWidth = 13
     stitch.lineCapStyle = .round
     stitch.setLineDash([30, 26], count: 2, phase: 0)
@@ -102,19 +109,6 @@ func drawIcon() {
         NSBezierPath(ovalIn: NSRect(x: pupilCenter.x - 18, y: pupilCenter.y + 6, width: 18, height: 18)).fill()
     }
 
-    // The pull tab, sewn into the top seam (inside the tile's clip).
-    NSGraphicsContext.saveGraphicsState()
-    tile.addClip()
-    let tab = NSBezierPath(roundedRect: NSRect(x: 712, y: 760, width: 52, height: 190), xRadius: 26, yRadius: 26)
-    withShadow(0.3, blur: 6, y: -4) {
-        thread.setFill()
-        tab.fill()
-    }
-    metal.setFill()
-    NSBezierPath(ovalIn: NSRect(x: 720, y: 772, width: 36, height: 36)).fill()
-    NSColor(srgbRed: 0.231, green: 0.184, blue: 0.153, alpha: 1).setFill()
-    NSBezierPath(ovalIn: NSRect(x: 729, y: 781, width: 18, height: 18)).fill()
-    NSGraphicsContext.restoreGraphicsState()
 }
 
 func png(pixels: Int) -> Data? {

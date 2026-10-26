@@ -2,11 +2,11 @@ import AppKit
 import PouchCore
 import SwiftUI
 
-/// One colorway: the flap's fabric and the thread it's stitched with.
+/// One colorway: the flap's leather and the thread it's stitched with.
 struct Theme: Equatable {
     let id: ThemeID
     let name: String
-    /// The flap fabric, also used for the woven label.
+    /// The flap leather.
     let flap: Color
     /// Stitching on the flap and the label's lettering.
     let thread: Color
@@ -18,26 +18,26 @@ struct Theme: Equatable {
 
     static func named(_ id: ThemeID) -> Theme {
         switch id {
-        case .tomato:
-            Theme(id: id, name: "Tomato", flap: Color(light: 0xD04A27, dark: 0xB8432A),
-                  thread: Color(light: 0xF6DCC2, dark: 0xF0D2B6), accent: Color(light: 0xB43D1D, dark: 0xF08460),
-                  controlTint: Color(nsColor: NSColor(hex: 0xC9482A)))
-        case .moss:
-            Theme(id: id, name: "Moss", flap: Color(light: 0x55703C, dark: 0x4C6436),
-                  thread: Color(light: 0xE6E4C4, dark: 0xDCDBB8), accent: Color(light: 0x4A6334, dark: 0xA3BD84),
-                  controlTint: Color(nsColor: NSColor(hex: 0x587540)))
-        case .denim:
-            Theme(id: id, name: "Denim", flap: Color(light: 0x2F4B7A, dark: 0x2D4672),
-                  thread: Color(light: 0xE8CF9E, dark: 0xE2C894), accent: Color(light: 0x2F4B7A, dark: 0x93ACDD),
-                  controlTint: Color(nsColor: NSColor(hex: 0x3A5A8F)))
-        case .mustard:
-            Theme(id: id, name: "Mustard", flap: Color(light: 0xD49D24, dark: 0xBA8920),
-                  thread: Color(light: 0x4A3311, dark: 0x3E2B0E), accent: Color(light: 0x8E6411, dark: 0xE4B64C),
-                  controlTint: Color(nsColor: NSColor(hex: 0xC69220)))
+        case .cognac:
+            Theme(id: id, name: "Cognac", flap: Color(light: 0xAE5E2C, dark: 0x9A5227),
+                  thread: Color(light: 0xF1DFC0, dark: 0xE9D5B2), accent: Color(light: 0x8A4520, dark: 0xD9925E),
+                  controlTint: Color(nsColor: NSColor(hex: 0xAE5E2C)))
+        case .oxblood:
+            Theme(id: id, name: "Oxblood", flap: Color(light: 0x6B2024, dark: 0x5E1C20),
+                  thread: Color(light: 0xE8CFB0, dark: 0xDFC4A3), accent: Color(light: 0x7A262A, dark: 0xD68A84),
+                  controlTint: Color(nsColor: NSColor(hex: 0x7A262A)))
+        case .olive:
+            Theme(id: id, name: "Olive", flap: Color(light: 0x5A5F33, dark: 0x4E532C),
+                  thread: Color(light: 0xE7DEBD, dark: 0xDDD3AF), accent: Color(light: 0x51562D, dark: 0xB4BA82),
+                  controlTint: Color(nsColor: NSColor(hex: 0x5F6536)))
+        case .navy:
+            Theme(id: id, name: "Navy", flap: Color(light: 0x263449, dark: 0x222F42),
+                  thread: Color(light: 0xDCC59B, dark: 0xD3BB90), accent: Color(light: 0x2C3C55, dark: 0x9DB0CE),
+                  controlTint: Color(nsColor: NSColor(hex: 0x34486A)))
         }
     }
 }
 
 extension EnvironmentValues {
-    @Entry var theme = Theme.named(.tomato)
+    @Entry var theme = Theme.named(.cognac)
 }

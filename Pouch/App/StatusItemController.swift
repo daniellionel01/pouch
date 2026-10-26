@@ -2,12 +2,14 @@ import AppKit
 import KeyboardShortcuts
 import PouchCore
 
-/// Owns the menu bar icon and its menu.
+/// Owns the menu bar icon. Clicking it shows or hides the shelf; right-click
+/// (or Control-click) opens the menu.
 @MainActor
 final class StatusItemController: NSObject, NSMenuDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let shelf: ShelfPanelController
     private let store: ShelfStore
+    private lazy var menu = makeMenu()
     private let toggleItem = NSMenuItem(title: "Show Shelf", action: #selector(toggleShelf), keyEquivalent: "")
     private let clearItem = NSMenuItem(title: "Clear Shelf", action: #selector(clearShelf), keyEquivalent: "")
     private let icon = NSImage(systemSymbolName: "tray", accessibilityDescription: "Pouch")
@@ -26,8 +28,12 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             button.image = icon
             button.imagePosition = .imageLeading
             button.font = .monospacedDigitSystemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold)
+            // Handle clicks ourselves instead of attaching the menu, so a
+            // plain click can toggle the shelf.
+            button.target = self
+            button.action = #selector(statusItemClicked)
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
-        statusItem.menu = makeMenu()
 
         // Show how many things are in the pouch, even while it's hidden.
         updateCount()
@@ -58,6 +64,21 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit Pouch", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         return menu
+    }
+
+    @objc private func statusItemClicked() {
+        let event = NSApp.currentEvent
+        if event?.type == .rightMouseUp || event?.modifierFlags.contains(.control) == true {
+            // Attach the menu just long enough to open it under the icon.
+            statusItem.menu = menu
+            statusItem.button?.performClick(nil)
+        } else {
+            shelf.toggle()
+        }
+    }
+
+    func menuDidClose(_ menu: NSMenu) {
+        statusItem.menu = nil
     }
 
     // Refresh titles right before the menu opens instead of tracking state.

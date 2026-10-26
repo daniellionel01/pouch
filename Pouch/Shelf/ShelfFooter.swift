@@ -1,12 +1,10 @@
 import SwiftUI
 
-/// The bottom of the pouch: a woven brand label, how many things are inside,
-/// and the one action that empties it.
+/// The bottom of the pouch: how many items are inside and a way to clear
+/// them. Only shown when there's something to count.
 struct ShelfFooter: View {
     var count: Int
-    var onEmpty: () -> Void
-
-    @Environment(\.theme) private var theme
+    var onClear: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -15,39 +13,22 @@ struct ShelfFooter: View {
                 .stroke(Palette.ink.opacity(0.16), style: .stitch(width: 1))
                 .frame(height: 1)
                 .padding(.horizontal, 16)
-                .opacity(count > 0 ? 1 : 0)
-            content
-        }
-    }
-
-    private var content: some View {
-        HStack(spacing: 8) {
-            WovenLabel()
-            Text(summary)
-                .font(.system(size: 11))
-                .foregroundStyle(Palette.inkSecondary)
-                .contentTransition(.numericText())
-                .animation(.pouchLand, value: count)
-                .allowsHitTesting(false)
-            Spacer(minLength: 0)
-            if count > 0 {
-                Button("Empty", action: onEmpty)
+            HStack {
+                Text(count == 1 ? "1 item" : "\(count) items")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Palette.inkSecondary)
+                    .contentTransition(.numericText())
+                    .animation(.pouchLand, value: count)
+                    .allowsHitTesting(false)
+                Spacer(minLength: 0)
+                Button("Clear all", action: onClear)
                     .buttonStyle(TextActionStyle())
-                    .help("Shake everything out. Your files stay where they are.")
-                    .transition(.opacity)
+                    .help("Removes everything from Pouch. The files themselves aren't touched.")
             }
-        }
-        .padding(.leading, 16)
-        .padding(.trailing, 18)
-        .padding(.top, 8)
-        .padding(.bottom, 14)
-    }
-
-    private var summary: String {
-        switch count {
-        case 0: "empty"
-        case 1: "1 thing"
-        default: "\(count) things"
+            .padding(.leading, 18)
+            .padding(.trailing, 14)
+            .padding(.top, 8)
+            .padding(.bottom, 14)
         }
     }
 }
@@ -58,24 +39,6 @@ private struct Line: Shape {
             path.move(to: CGPoint(x: rect.minX, y: rect.midY))
             path.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
         }
-    }
-}
-
-/// Like the label sewn into a bag's seam.
-private struct WovenLabel: View {
-    @Environment(\.theme) private var theme
-
-    var body: some View {
-        Text("POUCH")
-            .font(.system(size: 7, weight: .heavy))
-            .tracking(1.4)
-            .foregroundStyle(theme.thread)
-            .padding(.horizontal, 5)
-            .padding(.vertical, 2.5)
-            .background(theme.flap)
-            .overlay(Rectangle().strokeBorder(theme.thread.opacity(0.5), style: StrokeStyle(lineWidth: 0.6, dash: [1.4, 1.2])).padding(1.2))
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
     }
 }
 

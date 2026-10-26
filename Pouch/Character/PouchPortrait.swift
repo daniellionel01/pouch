@@ -9,8 +9,9 @@ struct PouchPortrait: View {
         ZStack(alignment: .top) {
             BodyShape().fill(Palette.canvas).fabricGrain()
             BodyShape().stroke(Palette.hairline, lineWidth: 0.5)
-            FlapShape().fill(theme.flap).fabricGrain(0.09).clipShape(FlapShape())
-            FlapShape(inset: 4).stroke(theme.thread.opacity(0.85), style: .stitch(width: 1.1))
+            FlapShape().fill(theme.flap).leatherGrain().clipShape(FlapShape())
+            FlapShape().stroke(.black.opacity(0.32), lineWidth: 2).clipShape(FlapShape())
+            FlapShape(inset: 5).stroke(theme.thread.opacity(0.9), style: .stitch(width: 1.2))
             FaceView(character: character, lidColor: theme.flap)
                 .offset(y: 16)
         }

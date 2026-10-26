@@ -52,7 +52,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if environment["POUCH_SNAPSHOT_WINDOW"] == "settings" {
             settingsWindow.show()
             if let window = settingsWindow.window { DebugSnapshot.scheduleIfRequested(for: window) }
-        } else {
+        } else if environment["POUCH_SNAPSHOT"] != nil {
+            // Peek rather than show, so snapshots never change whether you
+            // left the shelf open.
+            shelf.peek(for: .seconds(30))
             DebugSnapshot.scheduleIfRequested(for: shelf.panel)
         }
         #endif

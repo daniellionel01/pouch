@@ -1,17 +1,16 @@
 import SwiftUI
 
-/// What the inside of an empty pouch says. Set like a note in the lining:
-/// top-left, a serif line and a plain one.
+/// What an empty pouch says: one line, and a hint for first-timers.
 struct EmptyNote: View {
     var isDropTargeted: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(isDropTargeted ? "Let go." : "Nothing in here.")
+            Text(isDropTargeted ? "Drop it" : "Empty")
                 .font(.system(size: 16, design: .serif).italic())
                 .foregroundStyle(Palette.ink)
                 .contentTransition(.opacity)
-            Text("Drop files on me. New screenshots find their own way in.")
+            Text("Drag files here. Screenshots are added automatically.")
                 .font(.system(size: 11))
                 .foregroundStyle(Palette.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)

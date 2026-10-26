@@ -83,7 +83,7 @@ final class ShelfPanelController {
         dismiss()
     }
 
-    /// The pull tab or Esc: the pouch shuts its eyes, then tucks itself away.
+    /// Esc: the pouch shuts its eyes, then puts itself away.
     private func closeFromShelf() {
         director.closeEyes()
         Task { [weak self] in

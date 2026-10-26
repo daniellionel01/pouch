@@ -40,7 +40,7 @@ struct SettingsView: View {
             } header: {
                 Text("Screenshots")
             } footer: {
-                Text("Screenshots show up once macOS saves them. Turn off **Show Floating Thumbnail** in the Screenshot app (⌘⇧5 → Options) and they'll land instantly.")
+                Text("macOS only saves a screenshot after its preview thumbnail goes away, about 5 seconds. To skip the wait, turn off **Show Floating Thumbnail** in the Screenshot app (⌘⇧5 → Options).")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -49,8 +49,8 @@ struct SettingsView: View {
                 Toggle("Remove items after dragging them out", isOn: $settings.removeAfterDragOut)
             }
 
-            Section("Look and sound") {
-                LabeledContent("Colorway") {
+            Section("Appearance") {
+                LabeledContent("Leather") {
                     ColorwayPicker(selection: $settings.theme)
                 }
                 Toggle("Sound effects", isOn: $settings.soundsEnabled)
@@ -93,7 +93,7 @@ private struct SettingsHeader: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Pouch")
                     .font(.system(size: 20, design: .serif).weight(.semibold))
-                Text("Holds your files and screenshots while you switch apps. Version \(Bundle.main.shortVersion)")
+                Text("Holds files and screenshots while you switch apps. Version \(Bundle.main.shortVersion)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -102,7 +102,7 @@ private struct SettingsHeader: View {
     }
 }
 
-/// Fabric swatches: a square of the flap color with its thread stitched
+/// Leather swatches: a square of the flap color with its thread stitched
 /// around the edge. The chosen one is outlined.
 private struct ColorwayPicker: View {
     @Binding var selection: ThemeID
@@ -117,7 +117,7 @@ private struct ColorwayPicker: View {
                 } label: {
                     RoundedRectangle(cornerRadius: 3)
                         .fill(theme.flap)
-                        .fabricGrain(0.1)
+                        .leatherGrain()
                         .overlay(RoundedRectangle(cornerRadius: 2).stroke(theme.thread.opacity(0.85), style: .stitch(width: 1)).padding(3))
                         .frame(width: 24, height: 24)
                         .padding(2.5)
